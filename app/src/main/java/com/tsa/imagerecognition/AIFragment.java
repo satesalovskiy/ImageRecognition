@@ -205,6 +205,7 @@ public class AIFragment extends ArFragment {
             SnackbarHelper.getInstance()
                     .showError(getActivity(), "Could not setup augmented image database");
         }
+        config.setFocusMode(Config.FocusMode.AUTO);
         return config;
     }
 
