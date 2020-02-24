@@ -16,9 +16,12 @@
 
 package com.tsa.imagerecognition;
 import android.os.Bundle;
+import android.widget.Toast;
 //import android.support.v7.app.AppCompatActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 
 /**
@@ -33,10 +36,15 @@ import androidx.appcompat.app.AppCompatActivity;
  * Images</a>.
  */
 public class MainActivity extends AppCompatActivity {
+
+    FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+        auth = FirebaseAuth.getInstance();
+        Toast.makeText(this, auth.getUid(), Toast.LENGTH_LONG).show();
     }
 }
