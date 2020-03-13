@@ -71,6 +71,8 @@ public class AIFragment extends ArFragment {
     // Load a single image (true) or a pre-generated image database (false).
     private static final boolean USE_SINGLE_IMAGE = false;
 
+    public int loh;
+
     private static final Color CHROMA_KEY_COLOR = new Color(0.1843f, 1.0f, 0.098f);
 
     // Do a runtime check for the OpenGL level available at runtime to avoid Sceneform crashing the
