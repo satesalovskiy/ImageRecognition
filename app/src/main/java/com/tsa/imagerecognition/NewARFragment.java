@@ -27,8 +27,8 @@ import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
-import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
@@ -51,7 +51,7 @@ import common.helpers.SnackbarHelper;
 /**
  * Extend the ArFragment to customize the ARCore session configuration to include Augmented Images.
  */
-public class AIFragment extends ArFragment {
+public class NewARFragment extends ArFragment {
     private static final String TAG = "AugmentedImageFragment";
 
     // This is the name of the image in the sample database.  A copy of the image is in the assets
@@ -89,6 +89,7 @@ public class AIFragment extends ArFragment {
     private int[] movieUrls;
     private StorageReference mStorageRef;
     private HashMap<String, Integer> moviesMap;
+    private AnchorNode videoAnchorNode;
 
 
     @Override
@@ -96,6 +97,7 @@ public class AIFragment extends ArFragment {
         super.onCreate(savedInstanceState);
 
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mediaPlayer = new MediaPlayer();
 
         names = new String[IMAGE_NUMBER];
         movieUrls = new int[IMAGE_NUMBER];
@@ -132,6 +134,9 @@ public class AIFragment extends ArFragment {
         //Texture that will contain a video
         externalTexture = new ExternalTexture();
 
+
+
+
         //Media player always shows one video :(
 
 
@@ -151,6 +156,9 @@ public class AIFragment extends ArFragment {
                             return null;
                         });
 
+        videoAnchorNode = new AnchorNode();
+        videoAnchorNode.setParent(getArSceneView().getScene());
+
 
         return view;
     }
@@ -169,59 +177,77 @@ public class AIFragment extends ArFragment {
                 frame.getUpdatedTrackables(AugmentedImage.class);
 
         for (AugmentedImage augmentedImage : updatedAugmentedImages) {
-            switch (augmentedImage.getTrackingState()) {
-                case PAUSED:
-                    // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
-                    // but not yet tracked.
-                    //mediaPlayer.stop();
-                    String text = "Detected Image " + augmentedImage.getName();
-                    SnackbarHelper.getInstance().showMessage(getActivity(), text);
+            if(augmentedImage.getTrackingMethod() != AugmentedImage.TrackingMethod.FULL_TRACKING && mediaPlayer.isPlaying()) {
+                pauseArVideo();
+            }
+            if(augmentedImage.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING && !mediaPlayer.isPlaying()) {
+                resumeArVidoe();
+            }
 
-                    break;
+             playbackArVideo(augmentedImage);
+        }
+    }
 
-                case TRACKING:
-                    // Create a new anchor for newly found images.
-                    if (!augmentedImageMap.containsKey(augmentedImage)) {
-                        //New node with anchor in the center of the detected image
-                        AnchorNode anchorNode = new AnchorNode();
-                        anchorNode.setAnchor(augmentedImage.createAnchor(augmentedImage.getCenterPose()));
-                        anchorNode.setWorldScale(new Vector3(augmentedImage.getExtentX(), 1.0f, augmentedImage.getExtentZ()));
-                        anchorNode.setParent(getArSceneView().getScene());
+    private void playbackArVideo(AugmentedImage augmentedImage) {
+        // Create a new anchor for newly found images.
 
-                        //Node for media player
-                        Node videoNode = new Node();
-                        videoNode.setParent(anchorNode);
+        if(augmentedImage.getTrackingState() == TrackingState.TRACKING) {
+            if (!augmentedImageMap.containsKey(augmentedImage)) {
+                //New node with anchor in the center of the detected image
+                videoAnchorNode.setAnchor(augmentedImage.createAnchor(augmentedImage.getCenterPose()));
+                videoAnchorNode.setWorldScale(new Vector3(augmentedImage.getExtentX(), 1.0f, augmentedImage.getExtentZ()));
 
-                        augmentedImageMap.put(augmentedImage, anchorNode);
+                augmentedImageMap.put(augmentedImage, videoAnchorNode);
 
-                        int res = moviesMap.get(augmentedImage.getName());
+                int res = moviesMap.get(augmentedImage.getName());
 
-                        createPlayer(res, augmentedImage.getName());
+                 createPlayer(res, augmentedImage.getName());
 
-                        if (!mediaPlayer.isPlaying()) {
-                            mediaPlayer.start();
-                            externalTexture
-                                    .getSurfaceTexture()
-                                    .setOnFrameAvailableListener(
-                                            (SurfaceTexture surfaceTexture) -> {
-                                                videoNode.setRenderable(videoRenderable);
-                                                externalTexture.getSurfaceTexture().setOnFrameAvailableListener(null);
-                                            });
 
-                            Toast toast = Toast.makeText(getContext(), "Video is situated! For augmented image " + augmentedImage.getIndex(), Toast.LENGTH_LONG);
-                            toast.show();
-                        } else {
-                            videoNode.setRenderable(videoRenderable);
-                        }
-                    }
-                    break;
+//                mediaPlayer = MediaPlayer.create(getContext(), res);
+//
+//                String filename = "android.resource://" + getActivity().getPackageName() + "/raw/video1";
+//
+//                try{
+//                    mediaPlayer.setDataSource(getContext(), Uri.parse(filename));
+//                } catch (IOException e) {
+//
+//                }
 
-                case STOPPED:
 
-                    augmentedImageMap.remove(augmentedImage);
-                    break;
             }
         }
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        dismissArVideo();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mediaPlayer.release();
+    }
+
+    private void dismissArVideo(){
+
+        videoAnchorNode.getAnchor().detach();
+        videoAnchorNode.setRenderable(null);
+        mediaPlayer.reset();
+    }
+
+    private void pauseArVideo() {
+        videoAnchorNode.setRenderable(null);
+        mediaPlayer.pause();
+
+    }
+
+    private void resumeArVidoe() {
+        mediaPlayer.start();
+        videoAnchorNode.setRenderable(videoRenderable);
     }
 
     private void createPlayer(int resId, String name) {
@@ -275,10 +301,21 @@ public class AIFragment extends ArFragment {
 
 
 
-       // Log.d("JOPAPOPA", url);
-        mediaPlayer = MediaPlayer.create(getContext(), resId);
-        mediaPlayer.setSurface(externalTexture.getSurface());
-        mediaPlayer.setLooping(true);
+        // Log.d("JOPAPOPA", url);
+
+
+    mediaPlayer = MediaPlayer.create(getContext(), resId);
+    mediaPlayer.setSurface(externalTexture.getSurface());
+    mediaPlayer.setLooping(true);
+
+        mediaPlayer.start();
+        externalTexture
+                .getSurfaceTexture()
+                .setOnFrameAvailableListener(
+                        (SurfaceTexture surfaceTexture) -> {
+                            videoAnchorNode.setRenderable(videoRenderable);
+                            externalTexture.getSurfaceTexture().setOnFrameAvailableListener(null);
+                        });
     }
 
 
