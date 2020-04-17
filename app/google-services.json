@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "280018767556",
+    "firebase_url": "https://imagerecognition-ea266.firebaseio.com",
+    "project_id": "imagerecognition-ea266",
+    "storage_bucket": "imagerecognition-ea266.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280018767556:android:a37d1ca23b0d5668c68391",
+        "android_client_info": {
+          "package_name": "com.tsa.imagerecognition"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "280018767556-75coabuils287vqt0lm178ri3cbtr31t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tsa.imagerecognition",
+            "certificate_hash": "15c1392564d6d879257e62b2fe0a00a50318552a"
+          }
+        },
+        {
+          "client_id": "280018767556-edlnadfu1k7ct037l5ksvmgj6jr5gh8u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIsAYJshpJzz7eiMI_x11MLfJwA9bRx60"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "280018767556-edlnadfu1k7ct037l5ksvmgj6jr5gh8u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
