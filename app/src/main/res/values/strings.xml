@@ -4,4 +4,7 @@
     <string name="password">Password</string>
     <string name="register">Register</string>
     <string name="btn_link_to_login">Already have an account? Login!</string>
+
+
+    <string name="switch_db">Switch database</string>
 </resources>

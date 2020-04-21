@@ -2,6 +2,8 @@ package com.tsa.imagerecognition
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
@@ -14,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.google.android.material.tabs.TabLayout
 import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
@@ -41,7 +44,7 @@ open class ARFragment : ArFragment() {
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
     private val MIN_OPENGL_VERSION = 3.0
     private val USE_PRELOAD_DB = true
-    private lateinit var WHAT_DB_USE: String
+    private var WHAT_DB_USE: String? = "defualt"
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var externalTexture: ExternalTexture
@@ -51,11 +54,29 @@ open class ARFragment : ArFragment() {
     private var activeAugmentedImage: AugmentedImage? = null
     private lateinit var augmentedImageDB: AugmentedImageDatabase
 
+
+    private val APP_PREFERENCES = "image_recognition_prefs"
+    private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
+    private val APP_PREFERENCES_WHAT_DB_USE = "what_db_use"
+    private val APP_PREFERENCES_CUSTOM_FIRST_TIME = "custom_first_time"
+    private var isFirstLaunch: Boolean = true
+    private var isCustomFirstTime: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mediaPlayer = MediaPlayer()
 
-        WHAT_DB_USE = "custom"
+        val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+        if(pref!!.contains(APP_PREFERENCES_WHAT_DB_USE)){
+            WHAT_DB_USE = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
+            Log.d("FIRST_LAUNCH", "We will use"+WHAT_DB_USE)
+        }
+        if(pref!!.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
+            isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
+        }
+        if(pref!!.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
+            isCustomFirstTime = pref.getBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -100,12 +121,19 @@ open class ARFragment : ArFragment() {
 
         if (USE_PRELOAD_DB) {
             if(WHAT_DB_USE == "custom"){
-
-                //Вот так при первом запуске нужно делать!!
-               // val inputStr: InputStream? = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
-
                 val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
-                val inputStr: FileInputStream = FileInputStream(file)
+                val inputStr: InputStream?
+                if(isCustomFirstTime){
+                    inputStr = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
+                    val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+                    val editor = pref!!.edit()
+                    editor.putBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
+                    editor.apply()
+                    Log.d("FIRST_LAUNCH", "in first")
+                } else {
+                    inputStr = FileInputStream(file)
+                    Log.d("FIRST_LAUNCH", "in second")
+                }
                 augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
 
                 config.augmentedImageDatabase = augmentedImageDB

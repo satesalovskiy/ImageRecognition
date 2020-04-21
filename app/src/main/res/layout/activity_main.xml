@@ -13,15 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:orientation="vertical">
+    tools:context=".MainActivity">
 
+    <fragment android:name="com.tsa.imagerecognition.ARFragment"
+        android:id="@+id/ux_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.appcompat.widget.Toolbar
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -29,30 +32,18 @@
         android:background="#14ffffff"
         app:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
-
-    <fragment android:name="com.tsa.imagerecognition.ARFragment"
-        android:id="@+id/ux_fragment"
-        android:layout_width="match_parent"
-
-        android:layout_height="match_parent" />
-
-
     <ImageView
         android:id="@+id/image_view_fit_to_scan"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center"
-        android:scaleType="fitCenter"
-        />
+        android:scaleType="fitCenter" />
 
     <Button
         android:id="@+id/kek"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Add test image"
-        />
+        android:text="Add test image" />
 
-
-
-</LinearLayout>
+</FrameLayout>
