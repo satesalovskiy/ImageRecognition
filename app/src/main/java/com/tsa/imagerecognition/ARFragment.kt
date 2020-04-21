@@ -2,7 +2,6 @@ package com.tsa.imagerecognition
 
 import android.app.ActivityManager
 import android.content.Context
-import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
@@ -12,7 +11,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
@@ -25,8 +26,9 @@ import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import common.helpers.SnackbarHelper
-import java.io.IOException
-import java.io.InputStream
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
+import java.io.*
 
 /**
  * Extend the ArFragment to customize the ARCore session configuration to include Augmented Images.
@@ -34,10 +36,12 @@ import java.io.InputStream
 open class ARFragment : ArFragment() {
 
     private val DEFAULT_IMAGE_NAME = "images/default.jpg"
-    private val MY_IMAGE_DATABASE = "imagedb.imgdb"
+    private val DEFAULT_IMAGE_DATABASE = "imagedb.imgdb"
+    private val CUSTOM_IMAGE_DATABASE = "custom.imgdb"
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
     private val MIN_OPENGL_VERSION = 3.0
     private val USE_PRELOAD_DB = true
+    private lateinit var WHAT_DB_USE: String
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var externalTexture: ExternalTexture
@@ -45,10 +49,13 @@ open class ARFragment : ArFragment() {
     private lateinit var videoAnchorNode: AnchorNode
 
     private var activeAugmentedImage: AugmentedImage? = null
+    private lateinit var augmentedImageDB: AugmentedImageDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mediaPlayer = MediaPlayer()
+
+        WHAT_DB_USE = "custom"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -60,6 +67,23 @@ open class ARFragment : ArFragment() {
         arSceneView.isLightEstimationEnabled = false
         createArScene()
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+
+
+    }
+
+    public fun addNewImage(){
+        val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+        val outputStr: FileOutputStream = FileOutputStream(file)
+        augmentedImageDB.addImage("video1.png", loadAugmentedImageBitmap(TEST_IMAGE_2))
+        augmentedImageDB.serialize(outputStr)
+        outputStr.close()
+        Toast.makeText(activity, "Image added", Toast.LENGTH_LONG).show()
     }
 
     override fun getSessionConfiguration(session: Session): Config {
@@ -75,10 +99,23 @@ open class ARFragment : ArFragment() {
     private fun setupAugmentedImageDatabase(config: Config, session: Session): Boolean {
 
         if (USE_PRELOAD_DB) {
-            val inputStr: InputStream? = context?.assets?.open(MY_IMAGE_DATABASE)
-            val augmentedImageDB: AugmentedImageDatabase = AugmentedImageDatabase.deserialize(session, inputStr)
-            config.augmentedImageDatabase = augmentedImageDB
-            return true
+            if(WHAT_DB_USE == "custom"){
+
+                //Вот так при первом запуске нужно делать!!
+               // val inputStr: InputStream? = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
+
+                val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+                val inputStr: FileInputStream = FileInputStream(file)
+                augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+
+                config.augmentedImageDatabase = augmentedImageDB
+                return true
+            } else {
+                val inputStr: InputStream? = context?.assets?.open(DEFAULT_IMAGE_DATABASE)
+                augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+                config.augmentedImageDatabase = augmentedImageDB
+                return true
+            }
         } else {
             try {
                 config.augmentedImageDatabase = AugmentedImageDatabase(session).also { db ->
