@@ -3,18 +3,22 @@ package com.tsa.imagerecognition
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import com.google.android.material.tabs.TabLayout
 import com.google.ar.core.AugmentedImage
@@ -98,14 +102,29 @@ open class ARFragment : ArFragment() {
 
     }
 
-    public fun addNewImage(){
+    public fun addNewImage(bitmap: Bitmap, name: String){
+
         val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
         val outputStr: FileOutputStream = FileOutputStream(file)
-        augmentedImageDB.addImage("video1.png", loadAugmentedImageBitmap(TEST_IMAGE_2))
+
+
+
+
+        augmentedImageDB.addImage(name + ".png", bitmap)
+
+
         augmentedImageDB.serialize(outputStr)
         outputStr.close()
+
+        arSceneView.session?.apply {
+            val changedConfig = config
+            changedConfig.augmentedImageDatabase = augmentedImageDB
+            configure(changedConfig)
+        }
+
         Toast.makeText(activity, "Image added", Toast.LENGTH_LONG).show()
     }
+
 
     override fun getSessionConfiguration(session: Session): Config {
         val config = super.getSessionConfiguration(session)
@@ -135,6 +154,8 @@ open class ARFragment : ArFragment() {
                     Log.d("FIRST_LAUNCH", "in second")
                 }
                 augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+
+                Log.d("Jopka", augmentedImageDB.numImages.toString())
 
                 config.augmentedImageDatabase = augmentedImageDB
                 return true
@@ -243,18 +264,26 @@ open class ARFragment : ArFragment() {
 
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
 
-        val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
-
-        requireContext().assets.openFd(videoName)
-                .use { descriptor ->
-                    mediaPlayer.reset()
-                    mediaPlayer.setDataSource(descriptor)
-                }.also {
-                    mediaPlayer.isLooping = true
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                }
-
+        if(WHAT_DB_USE != "custom"){
+            val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
+            requireContext().assets.openFd(videoName)
+                    .use { descriptor ->
+                        mediaPlayer.reset()
+                        mediaPlayer.setDataSource(descriptor)
+                    }.also {
+                        mediaPlayer.isLooping = true
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    }
+        } else {
+            val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            Log.d("Jopka", Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            mediaPlayer.isLooping = true
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        }
 
         videoAnchorNode.anchor?.detach()
         videoAnchorNode.anchor = augmentedImage.createAnchor(augmentedImage.centerPose)
