@@ -33,6 +33,7 @@ import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
+
     private lateinit var auth: FirebaseAuth
     private val APP_PREFERENCES = "image_recognition_prefs"
     private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
@@ -294,14 +295,22 @@ class MainActivity : AppCompatActivity() {
         mBuilder.setSingleChoiceItems(listItems, checkedItem) { dialogInterface, i ->
 
             when(i){
-                0 -> writeInPrefs("custom")
-                1 -> writeInPrefs("default")
+                0 -> {
+                    writeInPrefs("custom")
+                    SnackbarHelper.getInstance()
+                            .showMessage(this, "Changes will be committed after restart your app")
+                }
+                1 ->{
+                    writeInPrefs("default")
+                    SnackbarHelper.getInstance()
+                            .showMessage(this, "Changes will be committed after restart your app")
+                }
             }
 
             dialogInterface.dismiss()
         }
         // Set the neutral/cancel button click listener
-        mBuilder.setNeutralButton("Cancel") { dialog, which ->
+        mBuilder.setNeutralButton("Cancel") { dialog, _ ->
             // Do something when click the neutral button
             dialog.cancel()
         }
@@ -312,9 +321,35 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun checkPermissions() {
-        if(ContextCompat.checkSelfPermission(this, "android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf("android.permission.WRITE_EXTERNAL_STORAGE"), 1)
-            return
+        if(!hasPermissions(this,android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(android.Manifest.permission.CAMERA,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    321)
+
+        }
+    }
+
+    private fun hasPermissions(context: Context, vararg permissions: String): Boolean = permissions.all {
+        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when(requestCode){
+            321 -> {
+                permissions.forEachIndexed{ index, i ->
+                    if(grantResults.isNotEmpty() && (grantResults[index] != PackageManager.PERMISSION_GRANTED)) {
+                        if(i == android.Manifest.permission.CAMERA){
+                            SnackbarHelper.getInstance().showError(this,"You can't use app without CAMERA permission")
+                        } else if (i == android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                            Toast.makeText(this, "You can't use custom image database without STORAGE permission", Toast.LENGTH_LONG).show()
+                            writeInPrefs("default")
+                        }
+                    }
+                }
+            }
+            else -> {}
         }
     }
 
@@ -326,7 +361,6 @@ class MainActivity : AppCompatActivity() {
         editor.putString(APP_PREFERENCES_WHAT_DB_USE, what)
         editor.apply()
 
-        SnackbarHelper.getInstance()
-                .showMessage(this, "Changes will be committed after restart your app")
+
     }
 }

@@ -27,6 +27,7 @@ import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
 import com.google.ar.core.Session
 import com.google.ar.core.exceptions.ImageInsufficientQualityException
+import com.google.ar.core.exceptions.UnavailableException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
@@ -156,7 +157,16 @@ open class ARFragment : ArFragment() {
 
                 var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
 
-                val inputStr: InputStream?
+
+
+                var inputStr: InputStream?
+
+                try {
+                    FileInputStream(file)
+                } catch (ex: FileNotFoundException){
+                    SnackbarHelper.getInstance().showError(activity,"Unable to get access to storage. Check storage permissions")
+                }
+
                 if (isCustomFirstTime) {
                     inputStr = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
                     val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
@@ -165,8 +175,6 @@ open class ARFragment : ArFragment() {
                     editor.apply()
                     Log.d("FIRST_LAUNCH", "in first")
                 } else {
-
-
                     if (file.exists()) {
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 1")
@@ -175,7 +183,6 @@ open class ARFragment : ArFragment() {
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 2")
                     }
-
                 }
                 augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
 
