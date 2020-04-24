@@ -1,46 +1,34 @@
 
 package com.tsa.imagerecognition
 
+//import android.support.v7.app.AppCompatActivity
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.database.Cursor
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-//import android.support.v7.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
+import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
-import java.util.jar.Manifest
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.Environment.getExternalStorageDirectory
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
-import java.io.*
-import java.net.URI
-import java.util.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
@@ -90,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         frt.commit()
 
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+       // supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
        // supportFragmentManager.findFragmentById(R.id.ux_fragment)
         //auth = FirebaseAuth.getInstance()
@@ -113,11 +101,34 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             R.id.add_photo -> {
-                addNewPhotoToDB()
-                return true
+
+                if(checkedPosition == "default"){
+                    showThatUserCannotAddImage()
+                    return true
+                } else {
+                    addNewPhotoToDB()
+                    return true
+                }
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+
+    private fun showThatUserCannotAddImage() {
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("Change database?")
+                .setMessage("You can't add new augmented image into Default database. Would you like to change active database?")
+                .setCancelable(true)
+                .setPositiveButton("Change") { dialog, id ->
+                    showSwitchDialog()
+                    dialog.dismiss()
+                }
+                .setNegativeButton("No") { dialog, id ->
+                    dialog.cancel()
+                }
+        val dialog = builder.create()
+        dialog.show()
     }
 
     private fun addNewPhotoToDB() {
@@ -141,11 +152,16 @@ class MainActivity : AppCompatActivity() {
 
 
         builder.setView(view1)
-                .setPositiveButton("Add", DialogInterface.OnClickListener { dialogInterface, i ->
+                .setPositiveButton("Add"){ dialogInterface, i ->
 
                     val name = view1.edit_name.text.toString()
-                    saveEverythingInStorage(name)
-                })
+
+                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized){
+                        SnackbarHelper.getInstance().showMessage(this, "You forgot to initialize something!")
+                    } else {
+                        saveEverythingInStorage(name)
+                    }
+                }
                 .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
 
         val dialog = builder.create()
@@ -200,11 +216,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun saveVideoToInternalStorage (name: String) {
-
         val selectedVideoFile : File = File(pickedVideoPath)  // 2
         val selectedVideoFileExtension : String = selectedVideoFile.extension  // 3
         val internalStorageVideoFileName : String = name +"."+ selectedVideoFileExtension
-
         var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
         var fos = FileOutputStream(resultFile)
         fos.write(selectedVideoFile.readBytes())
@@ -265,8 +279,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
     private fun showSwitchDialog() {
         val listItems = arrayOf("Custom", "Default")
         val mBuilder = AlertDialog.Builder(this@MainActivity)
@@ -313,5 +325,8 @@ class MainActivity : AppCompatActivity() {
         val editor = pref.edit()
         editor.putString(APP_PREFERENCES_WHAT_DB_USE, what)
         editor.apply()
+
+        SnackbarHelper.getInstance()
+                .showMessage(this, "Changes will be committed after restart your app")
     }
 }

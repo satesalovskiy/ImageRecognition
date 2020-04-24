@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -25,6 +26,7 @@ import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
 import com.google.ar.core.Session
+import com.google.ar.core.exceptions.ImageInsufficientQualityException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
@@ -32,6 +34,7 @@ import com.google.ar.sceneform.rendering.Color
 import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import com.google.ar.sceneform.ux.AugmentedFaceNode
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
@@ -56,7 +59,7 @@ open class ARFragment : ArFragment() {
     private lateinit var videoAnchorNode: AnchorNode
 
     private var activeAugmentedImage: AugmentedImage? = null
-    private lateinit var augmentedImageDB: AugmentedImageDatabase
+    public lateinit var augmentedImageDB: AugmentedImageDatabase
 
 
     private val APP_PREFERENCES = "image_recognition_prefs"
@@ -71,14 +74,14 @@ open class ARFragment : ArFragment() {
         mediaPlayer = MediaPlayer()
 
         val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
-        if(pref!!.contains(APP_PREFERENCES_WHAT_DB_USE)){
+        if (pref!!.contains(APP_PREFERENCES_WHAT_DB_USE)) {
             WHAT_DB_USE = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
-            Log.d("FIRST_LAUNCH", "We will use"+WHAT_DB_USE)
+            Log.d("FIRST_LAUNCH", "We will use $WHAT_DB_USE")
         }
-        if(pref!!.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
+        if (pref!!.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
             isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
         }
-        if(pref!!.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
+        if (pref!!.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
             isCustomFirstTime = pref.getBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
         }
     }
@@ -98,23 +101,32 @@ open class ARFragment : ArFragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-
-
     }
 
-    public fun addNewImage(bitmap: Bitmap, name: String){
+    override fun onStop() {
+        super.onStop()
+        //serialazeDB()
+    }
 
-        val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+    private fun serialazeDB() {
+        //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+        var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
         val outputStr: FileOutputStream = FileOutputStream(file)
-
-
-
-
-        augmentedImageDB.addImage(name + ".png", bitmap)
-
-
         augmentedImageDB.serialize(outputStr)
         outputStr.close()
+    }
+
+    public fun addNewImage(bitmap: Bitmap, name: String) {
+
+        try {
+            augmentedImageDB.addImage(name, bitmap)
+        } catch (ex: ImageInsufficientQualityException) {
+            SnackbarHelper.getInstance().showMessage(activity, "Insufficient image quality, choose another image")
+            return
+        }
+
+        serialazeDB()
 
         arSceneView.session?.apply {
             val changedConfig = config
@@ -139,10 +151,13 @@ open class ARFragment : ArFragment() {
     private fun setupAugmentedImageDatabase(config: Config, session: Session): Boolean {
 
         if (USE_PRELOAD_DB) {
-            if(WHAT_DB_USE == "custom"){
-                val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+            if (WHAT_DB_USE == "custom") {
+                //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+
+                var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
                 val inputStr: InputStream?
-                if(isCustomFirstTime){
+                if (isCustomFirstTime) {
                     inputStr = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
                     val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
                     val editor = pref!!.edit()
@@ -150,8 +165,17 @@ open class ARFragment : ArFragment() {
                     editor.apply()
                     Log.d("FIRST_LAUNCH", "in first")
                 } else {
-                    inputStr = FileInputStream(file)
-                    Log.d("FIRST_LAUNCH", "in second")
+
+
+                    if (file.exists()) {
+                        inputStr = FileInputStream(file)
+                        Log.d("FIRST_LAUNCH", "in second 1")
+                    } else {
+                        file.mkdir()
+                        inputStr = FileInputStream(file)
+                        Log.d("FIRST_LAUNCH", "in second 2")
+                    }
+
                 }
                 augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
 
@@ -200,7 +224,8 @@ open class ARFragment : ArFragment() {
                     renderable.material.setExternalTexture("videoTexture", externalTexture)
                     renderable.material.setFloat4("keyColor", CHROMA_KEY_COLOR)
                 }
-                .exceptionally { Log.e(TAG, "Could not create ModelRenderable")
+                .exceptionally {
+                    Log.e(TAG, "Could not create ModelRenderable")
                     return@exceptionally null
                 }
 
@@ -264,7 +289,7 @@ open class ARFragment : ArFragment() {
 
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
 
-        if(WHAT_DB_USE != "custom"){
+        if (WHAT_DB_USE != "custom") {
             val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
             requireContext().assets.openFd(videoName)
                     .use { descriptor ->
@@ -343,5 +368,6 @@ open class ARFragment : ArFragment() {
         private const val TEST_VIDEO_1 = "video0.mp4"
         private const val TEST_VIDEO_2 = "video1.mp4"
         private const val TEST_VIDEO_3 = "video2.mp4"
+
     }
 }
