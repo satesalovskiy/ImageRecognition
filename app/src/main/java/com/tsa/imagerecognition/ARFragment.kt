@@ -2,21 +2,32 @@ package com.tsa.imagerecognition
 
 import android.app.ActivityManager
 import android.content.Context
-import android.content.res.AssetManager
+import android.content.Context.MODE_PRIVATE
+import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import com.google.android.material.tabs.TabLayout
 import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
 import com.google.ar.core.Session
+import com.google.ar.core.exceptions.ImageInsufficientQualityException
+import com.google.ar.core.exceptions.UnavailableException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
@@ -24,9 +35,11 @@ import com.google.ar.sceneform.rendering.Color
 import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import com.google.ar.sceneform.ux.AugmentedFaceNode
 import common.helpers.SnackbarHelper
-import java.io.IOException
-import java.io.InputStream
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
+import java.io.*
 
 /**
  * Extend the ArFragment to customize the ARCore session configuration to include Augmented Images.
@@ -34,10 +47,12 @@ import java.io.InputStream
 open class ARFragment : ArFragment() {
 
     private val DEFAULT_IMAGE_NAME = "images/default.jpg"
-    private val MY_IMAGE_DATABASE = "imagedb.imgdb"
+    private val DEFAULT_IMAGE_DATABASE = "imagedb.imgdb"
+    private val CUSTOM_IMAGE_DATABASE = "custom.imgdb"
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
     private val MIN_OPENGL_VERSION = 3.0
     private val USE_PRELOAD_DB = true
+    private var WHAT_DB_USE: String? = "defualt"
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var externalTexture: ExternalTexture
@@ -45,10 +60,31 @@ open class ARFragment : ArFragment() {
     private lateinit var videoAnchorNode: AnchorNode
 
     private var activeAugmentedImage: AugmentedImage? = null
+    public lateinit var augmentedImageDB: AugmentedImageDatabase
+
+
+    private val APP_PREFERENCES = "image_recognition_prefs"
+    private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
+    private val APP_PREFERENCES_WHAT_DB_USE = "what_db_use"
+    private val APP_PREFERENCES_CUSTOM_FIRST_TIME = "custom_first_time"
+    private var isFirstLaunch: Boolean = true
+    private var isCustomFirstTime: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mediaPlayer = MediaPlayer()
+
+        val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+        if (pref!!.contains(APP_PREFERENCES_WHAT_DB_USE)) {
+            WHAT_DB_USE = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
+            Log.d("FIRST_LAUNCH", "We will use $WHAT_DB_USE")
+        }
+        if (pref!!.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
+            isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
+        }
+        if (pref!!.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
+            isCustomFirstTime = pref.getBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -61,6 +97,47 @@ open class ARFragment : ArFragment() {
         createArScene()
         return view
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        //serialazeDB()
+    }
+
+    private fun serialazeDB() {
+        //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+        var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
+        val outputStr: FileOutputStream = FileOutputStream(file)
+        augmentedImageDB.serialize(outputStr)
+        outputStr.close()
+    }
+
+    public fun addNewImage(bitmap: Bitmap, name: String) {
+
+        try {
+            augmentedImageDB.addImage(name, bitmap)
+        } catch (ex: ImageInsufficientQualityException) {
+            SnackbarHelper.getInstance().showMessage(activity, "Insufficient image quality, choose another image")
+            return
+        }
+
+        serialazeDB()
+
+        arSceneView.session?.apply {
+            val changedConfig = config
+            changedConfig.augmentedImageDatabase = augmentedImageDB
+            configure(changedConfig)
+        }
+
+        Toast.makeText(activity, "Image added", Toast.LENGTH_LONG).show()
+    }
+
 
     override fun getSessionConfiguration(session: Session): Config {
         val config = super.getSessionConfiguration(session)
@@ -75,10 +152,50 @@ open class ARFragment : ArFragment() {
     private fun setupAugmentedImageDatabase(config: Config, session: Session): Boolean {
 
         if (USE_PRELOAD_DB) {
-            val inputStr: InputStream? = context?.assets?.open(MY_IMAGE_DATABASE)
-            val augmentedImageDB: AugmentedImageDatabase = AugmentedImageDatabase.deserialize(session, inputStr)
-            config.augmentedImageDatabase = augmentedImageDB
-            return true
+            if (WHAT_DB_USE == "custom") {
+                //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
+
+                var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
+
+
+                var inputStr: InputStream?
+
+                try {
+                    FileInputStream(file)
+                } catch (ex: FileNotFoundException){
+                    SnackbarHelper.getInstance().showError(activity,"Unable to get access to storage. Check storage permissions")
+                }
+
+                if (isCustomFirstTime) {
+                    inputStr = context?.assets?.open(CUSTOM_IMAGE_DATABASE)
+                    val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+                    val editor = pref!!.edit()
+                    editor.putBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
+                    editor.apply()
+                    Log.d("FIRST_LAUNCH", "in first")
+                } else {
+                    if (file.exists()) {
+                        inputStr = FileInputStream(file)
+                        Log.d("FIRST_LAUNCH", "in second 1")
+                    } else {
+                        file.mkdir()
+                        inputStr = FileInputStream(file)
+                        Log.d("FIRST_LAUNCH", "in second 2")
+                    }
+                }
+                augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+
+                Log.d("Jopka", augmentedImageDB.numImages.toString())
+
+                config.augmentedImageDatabase = augmentedImageDB
+                return true
+            } else {
+                val inputStr: InputStream? = context?.assets?.open(DEFAULT_IMAGE_DATABASE)
+                augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+                config.augmentedImageDatabase = augmentedImageDB
+                return true
+            }
         } else {
             try {
                 config.augmentedImageDatabase = AugmentedImageDatabase(session).also { db ->
@@ -114,7 +231,8 @@ open class ARFragment : ArFragment() {
                     renderable.material.setExternalTexture("videoTexture", externalTexture)
                     renderable.material.setFloat4("keyColor", CHROMA_KEY_COLOR)
                 }
-                .exceptionally { Log.e(TAG, "Could not create ModelRenderable")
+                .exceptionally {
+                    Log.e(TAG, "Could not create ModelRenderable")
                     return@exceptionally null
                 }
 
@@ -178,18 +296,26 @@ open class ARFragment : ArFragment() {
 
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
 
-        val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
-
-        requireContext().assets.openFd(videoName)
-                .use { descriptor ->
-                    mediaPlayer.reset()
-                    mediaPlayer.setDataSource(descriptor)
-                }.also {
-                    mediaPlayer.isLooping = true
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                }
-
+        if (WHAT_DB_USE != "custom") {
+            val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
+            requireContext().assets.openFd(videoName)
+                    .use { descriptor ->
+                        mediaPlayer.reset()
+                        mediaPlayer.setDataSource(descriptor)
+                    }.also {
+                        mediaPlayer.isLooping = true
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    }
+        } else {
+            val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            Log.d("Jopka", Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            mediaPlayer.isLooping = true
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        }
 
         videoAnchorNode.anchor?.detach()
         videoAnchorNode.anchor = augmentedImage.createAnchor(augmentedImage.centerPose)
@@ -249,5 +375,6 @@ open class ARFragment : ArFragment() {
         private const val TEST_VIDEO_1 = "video0.mp4"
         private const val TEST_VIDEO_2 = "video1.mp4"
         private const val TEST_VIDEO_3 = "video2.mp4"
+
     }
 }
