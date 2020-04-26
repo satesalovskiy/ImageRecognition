@@ -46,13 +46,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Add fragment" />
+        android:text="Add fragment"
+        android:visibility="gone"/>
 
- <ImageView
-     android:id="@+id/image_view_fit_to_scan"
-     android:layout_marginTop="100dp"
-     android:layout_width="100dp"
-     android:layout_height="100dp"
-     android:layout_gravity="center"
-     android:scaleType="fitCenter" />
+    <ImageView
+        android:id="@+id/image_view_fit_to_scan"
+        android:layout_marginTop="100dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter" />
+
+
+    <LinearLayout
+        android:id="@+id/image_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_gravity="bottom">
+
+        <TextView
+            android:id="@+id/image_description_text"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="No description"
+            android:gravity="center"
+            android:textSize="17sp"
+            android:background="@color/colorWhite"
+            android:textColor="@color/colorBlackSplashScreen" />
+
+    </LinearLayout>
+
+
 </FrameLayout>

@@ -4,7 +4,6 @@ package com.tsa.imagerecognition
 //import android.support.v7.app.AppCompatActivity
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -16,16 +15,18 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
+import common.helpers.DatabaseHelper
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
 import java.io.File
 import java.io.FileInputStream
@@ -50,10 +51,16 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var arFragment: ARFragment
 
+
+    private lateinit var mDatabaseHelper: DatabaseHelper
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mDatabaseHelper = DatabaseHelper(this)
 
         pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
         if(pref.contains(APP_PREFERENCES_FIRST_LAUNCH)){
@@ -103,6 +110,16 @@ class MainActivity : AppCompatActivity() {
                     .into(image_view_fit_to_scan)
         }
 
+
+        image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeLeft() {
+                image_description.visibility = View.GONE
+            }
+
+            override fun onSwipeTop() {
+
+            }
+        })
     }
 
     private fun setupFragment() {
@@ -179,11 +196,12 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("Add"){ dialogInterface, i ->
 
                     val name = view1.edit_name.text.toString()
+                    val description = view1.edit_description.text.toString()
 
-                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized){
+                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized || description.isEmpty()){
                         SnackbarHelper.getInstance().showMessage(this, "You forgot to initialize something!")
                     } else {
-                        saveEverythingInStorage(name)
+                        saveEverythingInStorage(name, description)
                     }
                 }
                 .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
@@ -192,9 +210,38 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun saveEverythingInStorage(name: String) {
+    private fun saveEverythingInStorage(name: String, description: String) {
+        addDataToSQL(name, description)
         saveImageToDB(name)
         saveVideoToInternalStorage(name)
+    }
+
+    private fun addDataToSQL(name: String, description: String) {
+        var insertData = mDatabaseHelper.addData(name, description)
+
+        if(insertData){
+            Toast.makeText(this, "Data added", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, "Failed", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    public fun showImageDescriptionMain(name:String ){
+
+        var data = mDatabaseHelper.data
+
+        var description = "No description"
+
+
+        while(data.moveToNext()) {
+            Log.d("pipka", data.getString(0))
+            if(name == data.getString(0)){
+                description = data.getString(1)
+                break
+            }
+        }
+        image_description.image_description_text.text = description
+        image_description.visibility = View.VISIBLE
     }
 
     private fun chooseVideo() {

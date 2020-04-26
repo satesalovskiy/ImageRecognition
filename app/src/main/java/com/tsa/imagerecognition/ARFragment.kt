@@ -3,12 +3,10 @@ package com.tsa.imagerecognition
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -16,18 +14,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import com.google.android.material.tabs.TabLayout
 import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
 import com.google.ar.core.Session
 import com.google.ar.core.exceptions.ImageInsufficientQualityException
-import com.google.ar.core.exceptions.UnavailableException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
@@ -35,10 +27,8 @@ import com.google.ar.sceneform.rendering.Color
 import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import com.google.ar.sceneform.ux.AugmentedFaceNode
+import common.helpers.DatabaseHelper
 import common.helpers.SnackbarHelper
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import java.io.*
 
 /**
@@ -58,6 +48,7 @@ open class ARFragment : ArFragment() {
     private lateinit var externalTexture: ExternalTexture
     private lateinit var videoRenderable: ModelRenderable
     private lateinit var videoAnchorNode: AnchorNode
+    private val databaseHelper: DatabaseHelper = DatabaseHelper(activity)
 
     private var activeAugmentedImage: AugmentedImage? = null
     public lateinit var augmentedImageDB: AugmentedImageDatabase
@@ -69,6 +60,7 @@ open class ARFragment : ArFragment() {
     private val APP_PREFERENCES_CUSTOM_FIRST_TIME = "custom_first_time"
     private var isFirstLaunch: Boolean = true
     private var isCustomFirstTime: Boolean = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -246,6 +238,8 @@ open class ARFragment : ArFragment() {
 
         val updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
 
+       // Log.d("pipka", updatedAugmentedImages.size.toString())
+
         val nonFullTrackingImages = updatedAugmentedImages.filter { it.trackingMethod != AugmentedImage.TrackingMethod.FULL_TRACKING }
 
         activeAugmentedImage?.let { activeAugmentedImage ->
@@ -268,11 +262,36 @@ open class ARFragment : ArFragment() {
 
         fullTrackingImages.firstOrNull()?.let { augmentedImage ->
             try {
+                showImageDescription(augmentedImage)
                 playbackArVideo(augmentedImage)
+
             } catch (e: Exception) {
                 Log.e(TAG, "Could not play video [${augmentedImage.name}]")
             }
         }
+    }
+
+    private fun showImageDescription(augmentedImage: AugmentedImage){
+//        Log.d("pipka", "start" )
+//
+//        var data = databaseHelper.data
+//
+//        var description = "No description"
+//        Log.d("pipka", "end")
+//
+//
+//
+//        while (data.moveToNext()) {
+//            if(data.getString(0) == augmentedImage.name){
+//                description = data.getString(1)
+//            }
+//        }
+//        edit_description.setText(description)
+//
+//        edit_description.visibility = View.VISIBLE
+
+        var act = activity as MainActivity
+        act.showImageDescriptionMain(augmentedImage.name)
     }
 
     private fun isArVideoPlaying() = mediaPlayer.isPlaying
