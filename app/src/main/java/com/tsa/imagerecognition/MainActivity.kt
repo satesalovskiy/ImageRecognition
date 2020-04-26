@@ -27,6 +27,7 @@ import common.helpers.DatabaseHelper
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
 import java.io.File
 import java.io.FileInputStream
@@ -240,8 +241,11 @@ class MainActivity : AppCompatActivity() {
                 break
             }
         }
-        image_description.image_description_text.text = description
-        image_description.visibility = View.VISIBLE
+//        image_description.image_description_text.text = description
+//        image_description.visibility = View.VISIBLE
+        image_desc.visibility = View.VISIBLE
+        image_desc.bottom_sheet_description.text = description
+        image_desc.bottom_sheet_topic.text = "Description for image: " + name
     }
 
     private fun chooseVideo() {

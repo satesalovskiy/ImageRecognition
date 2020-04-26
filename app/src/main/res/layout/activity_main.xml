@@ -63,7 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
+        android:layout_marginBottom="-100dp"
         android:layout_gravity="bottom">
 
         <TextView
@@ -77,6 +77,18 @@
             android:textColor="@color/colorBlackSplashScreen" />
 
     </LinearLayout>
+
+
+ <androidx.coordinatorlayout.widget.CoordinatorLayout
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+     android:layout_gravity="bottom"
+     android:id="@+id/image_desc"
+     android:visibility="gone">
+
+     <include layout="@layout/bottom_sheet" />
+
+ </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 </FrameLayout>
