@@ -329,11 +329,16 @@ open class ARFragment : ArFragment() {
         } else {
             val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
             mediaPlayer.reset()
-            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
-            Log.d("Jopka", Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
-            mediaPlayer.isLooping = true
-            mediaPlayer.prepare()
-            mediaPlayer.start()
+
+            var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            if(!file.exists()){
+                SnackbarHelper.getInstance().showMessage(activity, "Could not find video file! Try to re-create augmented image")
+            } else {
+                mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+                mediaPlayer.isLooping = true
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+            }
         }
 
         videoAnchorNode.anchor?.detach()
