@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
+import com.squareup.picasso.Picasso
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
@@ -87,6 +88,28 @@ class MainActivity : AppCompatActivity() {
 
 
         checkPermissions()
+
+
+        kek.setOnClickListener{
+            //setupFragment()
+
+           // Picasso.get().load("https://vk.com/im?peers=c257&sel=44403965&z=photo44403965_457242635%2Fmail1170545").into(image_view_fit_to_scan)
+
+            Picasso.get()
+                    .load(R.drawable.logo)
+                    .placeholder(R.drawable.defaultimage)
+                    .fit()
+                    .centerCrop()
+                    .into(image_view_fit_to_scan)
+        }
+
+    }
+
+    private fun setupFragment() {
+        val listFrag = ListOfDefaultImagesFragment()
+        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        frt.add(R.id.frgmCont, listFrag)
+        frt.commit()
     }
 
 

@@ -39,25 +39,20 @@
         android:background="#14ffffff"
         app:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
-    <ImageView
-        android:id="@+id/image_view_fit_to_scan"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:scaleType="fitCenter" />
+
 
     <Button
         android:id="@+id/kek"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Update fragment"
-        android:visibility="gone"/>
+        android:text="Add fragment" />
 
-      <VideoView
-          android:id="@+id/videovvv"
-          android:layout_width="200dp"
-          android:layout_height="200dp"
-          android:layout_gravity="center"/>
-
+ <ImageView
+     android:id="@+id/image_view_fit_to_scan"
+     android:layout_marginTop="100dp"
+     android:layout_width="100dp"
+     android:layout_height="100dp"
+     android:layout_gravity="center"
+     android:scaleType="fitCenter" />
 </FrameLayout>

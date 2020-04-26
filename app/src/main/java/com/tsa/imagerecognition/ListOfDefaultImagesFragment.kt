@@ -10,13 +10,16 @@ import android.view.ViewGroup
 /**
  * A simple [Fragment] subclass.
  */
-class AddPhotoFragment : Fragment() {
+class ListOfDefaultImagesFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_photo, container, false)
+        return inflater.inflate(R.layout.fragment_list_of_default_images, container, false)
     }
+
+
+
 
 
 }
