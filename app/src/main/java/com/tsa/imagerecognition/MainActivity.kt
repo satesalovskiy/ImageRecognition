@@ -4,7 +4,6 @@ package com.tsa.imagerecognition
 //import android.support.v7.app.AppCompatActivity
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -16,15 +15,19 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
+import com.squareup.picasso.Picasso
+import common.helpers.DatabaseHelper
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
 import java.io.File
 import java.io.FileInputStream
@@ -49,10 +52,17 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var arFragment: ARFragment
 
+
+    private lateinit var mDatabaseHelper: DatabaseHelper
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mDatabaseHelper = DatabaseHelper(this)
+        enterDataToMap()
 
         pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
         if(pref.contains(APP_PREFERENCES_FIRST_LAUNCH)){
@@ -87,6 +97,38 @@ class MainActivity : AppCompatActivity() {
 
 
         checkPermissions()
+
+
+        kek.setOnClickListener{
+            //setupFragment()
+
+           // Picasso.get().load("https://vk.com/im?peers=c257&sel=44403965&z=photo44403965_457242635%2Fmail1170545").into(image_view_fit_to_scan)
+
+            Picasso.get()
+                    .load(R.drawable.logo)
+                    .placeholder(R.drawable.defaultimage)
+                    .fit()
+                    .centerCrop()
+                    .into(image_view_fit_to_scan)
+        }
+
+
+        image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeLeft() {
+                image_description.visibility = View.GONE
+            }
+
+            override fun onSwipeTop() {
+
+            }
+        })
+    }
+
+    private fun setupFragment() {
+        val listFrag = ListOfDefaultImagesFragment()
+        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        frt.add(R.id.frgmCont, listFrag)
+        frt.commit()
     }
 
 
@@ -156,11 +198,12 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("Add"){ dialogInterface, i ->
 
                     val name = view1.edit_name.text.toString()
+                    val description = view1.edit_description.text.toString()
 
-                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized){
+                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized || description.isEmpty()){
                         SnackbarHelper.getInstance().showMessage(this, "You forgot to initialize something!")
                     } else {
-                        saveEverythingInStorage(name)
+                        saveEverythingInStorage(name, description)
                     }
                 }
                 .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
@@ -169,10 +212,58 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun saveEverythingInStorage(name: String) {
+    private fun saveEverythingInStorage(name: String, description: String) {
+        addDataToSQL(name, description)
         saveImageToDB(name)
         saveVideoToInternalStorage(name)
     }
+
+    private fun addDataToSQL(name: String, description: String) {
+        var insertData = mDatabaseHelper.addData(name, description)
+
+        if(insertData){
+            Toast.makeText(this, "Data added", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, "Failed", Toast.LENGTH_LONG).show()
+        }
+    }
+
+     fun showImageDescriptionMain(name:String, default: Boolean ){
+        if(default){
+
+            val description = descriptionByName.get(name.substringBeforeLast("."))
+
+            Log.d("pop", description.toString())
+
+            image_desc.visibility = View.VISIBLE
+            image_desc.bottom_sheet_description.text = description
+            image_desc.bottom_sheet_topic.text = "Description for image: " + name
+        } else {
+            var data = mDatabaseHelper.data
+            var description = "No description"
+
+
+            while(data.moveToNext()) {
+                Log.d("pipka", data.getString(0))
+                if(name == data.getString(0)){
+                    description = data.getString(1)
+                    break
+                }
+            }
+//        image_description.image_description_text.text = description
+//        image_description.visibility = View.VISIBLE
+            image_desc.visibility = View.VISIBLE
+            image_desc.bottom_sheet_description.text = description
+            image_desc.bottom_sheet_topic.text = "Description for image: " + name
+        }
+    }
+
+    private fun getStringFromResoursesByName(name: String) : Int {
+        val resourseId = resources.getIdentifier(name.substringBeforeLast("."), "string", packageName)
+        Log.d("pop", name)
+        return resourseId
+    }
+
 
     private fun chooseVideo() {
 
@@ -360,7 +451,98 @@ class MainActivity : AppCompatActivity() {
         val editor = pref.edit()
         editor.putString(APP_PREFERENCES_WHAT_DB_USE, what)
         editor.apply()
+    }
 
+    private var descriptionByName: HashMap<String, String> = HashMap()
+    private fun enterDataToMap(){
+        descriptionByName.put("nike", "Web site: https://www.nike.com \n " +
+                "Video link: https://www.youtube.com/watch?v=IHcWPVbDArU")
 
+        descriptionByName.put("adidas", "Web site: https://www.adidas.com \n " +
+                "Video link: https://www.youtube.com/watch?v=_sIaPgpM2v0")
+
+        descriptionByName.put("puma", "Web site: https://puma.com \n " +
+                "Video link: https://www.youtube.com/watch?v=gnaH-R3yTDk")
+
+        descriptionByName.put("converse", "Web site: https://converse.com \n " +
+                "Video link: https://www.youtube.com/watch?v=nEZrlU9mO58")
+
+        descriptionByName.put("skechers", "Web site: https://www.skechers.com \n " +
+                "Video link: https://www.youtube.com/watch?v=ZEv-W-Y3-8E")
+
+        descriptionByName.put("columbia", "Web site: https://www.columbia.com \n " +
+                "Video link: https://www.youtube.com/watch?v=6asVmQZ2B5w&t=88s")
+
+        descriptionByName.put("thenorthface", "Web site: https://thenorthface.com \n " +
+                "Video link: https://www.youtube.com/watch?v=gPPzWqAaV88&t=1s")
+
+        descriptionByName.put("reebok", "Web site: https://www.reebok.com \n " +
+                "Video link: https://www.youtube.com/watch?v=W0X66M1MgHU&t=3s")
+
+        descriptionByName.put("kappa", "Web site: https://kappa-usa.com \n " +
+                "Video link: https://www.youtube.com/watch?v=oxzwaStxxkU")
+
+        descriptionByName.put("santacruz", "Web site: https://www.santacruzbicycles.com \n " +
+                "Video link: https://www.youtube.com/watch?v=P8db5IFErho")
+
+        descriptionByName.put("intel", "Web site: https://www.intel.com \n " +
+                "Video link: https://www.youtube.com/watch?v=_VMYPLXnd7E")
+
+        descriptionByName.put("huawei", "Web site: https://shop.huawei.com \n " +
+                "Video link: https://www.youtube.com/watch?v=_m3PIkZW6o8")
+
+        descriptionByName.put("harman", "Web site: https://harmankardon.com \n " +
+                "Video link: https://www.youtube.com/watch?v=LKdBU7p9178")
+
+        descriptionByName.put("epam", "Web site: https://www.epam-group.ru \n " +
+                "Video link: https://www.youtube.com/watch?v=sBst40WlH74")
+
+        descriptionByName.put("microsoft", "Web site: https://www.microsoft.com \n " +
+                "Video link: https://www.youtube.com/watch?v=miM6mBAfA8g")
+
+        descriptionByName.put("google", "Web site: https://www.google.com \n " +
+                "Video link: https://www.youtube.com/watch?v=nP7JtxdxdwI")
+
+        descriptionByName.put("jetbrains", "Web site: https://www.jetbrains.com \n " +
+                "Video link: https://www.youtube.com/watch?v=rhAunB7UQFQ")
+
+        descriptionByName.put("oracle", "Web site: https://www.oracle.com \n " +
+                "Video link: https://www.youtube.com/watch?v=C7Bp07T5img")
+
+        descriptionByName.put("samsung", "Web site: https://www.samsung.com \n " +
+                "Video link: https://www.youtube.com/watch?v=NwFvlwe7HPo")
+
+        descriptionByName.put("nestle", "Web site: https://www.nestle.ru \n " +
+                "Video link: https://www.youtube.com/watch?v=jZtEXMBbaZg&feature=emb_title")
+
+        descriptionByName.put("danone", "Web site: http://www.danone.com \n " +
+                "Video link: https://www.youtube.com/watch?v=DpoSFf-oNdo")
+
+        descriptionByName.put("cocacola", "Web site: https://www.coca-cola.com \n " +
+                "Video link: https://www.youtube.com/watch?v=8mKFF5K4aUI")
+
+        descriptionByName.put("pepsico", "Web site: https://pepsi.com \n " +
+                "Video link: https://www.youtube.com/watch?v=_LMySyD0WGc")
+
+        descriptionByName.put("snickers", "Web site:  https://snickers.com \n " +
+                "Video link: https://www.youtube.com/watch?v=2Acdwxhec1s")
+
+        descriptionByName.put("mcdonalds", "Web site:  https://mcdonalds.com \n " +
+                "Video link: https://www.youtube.com/watch?v=2alwcW6Bvso")
+
+        descriptionByName.put("burgerking", "Web site: https://burgerking.com \n " +
+                "Video link: https://www.youtube.com/watch?v=KKlDNsPBTxg")
+
+        descriptionByName.put("subway", "Web site: https://subway.com \n " +
+                "Video link: https://www.youtube.com/watch?v=gYNYq5MTGx8")
+
+        descriptionByName.put("starbucks", "Web site: https://www.starbucks.com \n " +
+                "Video link: https://www.youtube.com/watch?v=SuEjGt-TPK0")
+
+        descriptionByName.put("kfc", "Web site: https://www.kfc.com \n " +
+                "Video link: https://www.youtube.com/watch?v=pWRYvUZhBsA&feature=emb_title")
+
+        descriptionByName.put("lays", "Web site: hßttps://lays.com \n " +
+                "Video link: https://www.youtube.com/watch?v=lSaZkOX-FWw")
     }
 }

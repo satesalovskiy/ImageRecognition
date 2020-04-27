@@ -20,5 +20,11 @@
         android:layout_height="wrap_content"
         android:text="Choose video"/>
 
+    <EditText
+        android:id="@+id/edit_description"
+        android:hint="Enter additional description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 
 </LinearLayout>
