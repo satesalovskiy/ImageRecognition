@@ -13,6 +13,30 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
+    <string name="nike">Official web site: https://www.nike.com \n
+        Video link: https://www.youtube.com/watch?v=IHcWPVbDArU
+    </string>
+
+    <string name="adidas">
+        <a href = "https://www.adidas.ru">
+            Official web site
+        </a>
+        <a href = "https://www.youtube.com/watch?v=_sIaPgpM2v0">
+            Video link
+        </a>
+    </string>
+
+    <string name="puma">Official web site: https://ru.puma.com \n
+        Video link: https://www.youtube.com/watch?v=gnaH-R3yTDk
+    </string>
+
+    <string name="converse">Official web site: https://ru.converse.com \n
+        Video link: https://www.youtube.com/watch?v=nEZrlU9mO58
+    </string>
+
+    <string name="skechers">Official web site: https://www.skechers.ru\n
+        Video link: https://www.youtube.com/watch?v=ZEv-W-Y3-8E
+    </string>
 
 
 </resources>

@@ -273,8 +273,13 @@ open class ARFragment : ArFragment() {
 
     private fun showImageDescription(augmentedImage: AugmentedImage){
         var act = activity as MainActivity
-        act.showImageDescriptionMain(augmentedImage.name)
+        if(WHAT_DB_USE == "custom"){
+            act.showImageDescriptionMain(augmentedImage.name, false)
+        } else {
+            act.showImageDescriptionMain(augmentedImage.name, true)
+        }
     }
+
 
     private fun isArVideoPlaying() = mediaPlayer.isPlaying
 
