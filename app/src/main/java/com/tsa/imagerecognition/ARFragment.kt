@@ -37,7 +37,7 @@ import java.io.*
 open class ARFragment : ArFragment() {
 
     private val DEFAULT_IMAGE_NAME = "images/default.jpg"
-    private val DEFAULT_IMAGE_DATABASE = "imagedb.imgdb"
+    private val DEFAULT_IMAGE_DATABASE = "newdefault.imgdb"
     private val CUSTOM_IMAGE_DATABASE = "custom.imgdb"
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
     private val MIN_OPENGL_VERSION = 3.0
@@ -189,18 +189,18 @@ open class ARFragment : ArFragment() {
                 return true
             }
         } else {
-            try {
-                config.augmentedImageDatabase = AugmentedImageDatabase(session).also { db ->
-                    db.addImage(TEST_VIDEO_1, loadAugmentedImageBitmap(TEST_IMAGE_1))
-                    db.addImage(TEST_VIDEO_2, loadAugmentedImageBitmap(TEST_IMAGE_2))
-                    db.addImage(TEST_VIDEO_3, loadAugmentedImageBitmap(TEST_IMAGE_3))
-                }
-                return true
-            } catch (e: IllegalArgumentException) {
-                Log.e(TAG, "Could not add bitmap to augmented image database")
-            } catch (e: IOException) {
-                Log.e(TAG, "IO exception loading augmented image bitmap.")
-            }
+//            try {
+//                config.augmentedImageDatabase = AugmentedImageDatabase(session).also { db ->
+//                    db.addImage(TEST_VIDEO_1, loadAugmentedImageBitmap(TEST_IMAGE_1))
+//                    db.addImage(TEST_VIDEO_2, loadAugmentedImageBitmap(TEST_IMAGE_2))
+//                    db.addImage(TEST_VIDEO_3, loadAugmentedImageBitmap(TEST_IMAGE_3))
+//                }
+//                return true
+//            } catch (e: IllegalArgumentException) {
+//                Log.e(TAG, "Could not add bitmap to augmented image database")
+//            } catch (e: IOException) {
+//                Log.e(TAG, "IO exception loading augmented image bitmap.")
+//            }
             return false
         }
     }
@@ -272,24 +272,6 @@ open class ARFragment : ArFragment() {
     }
 
     private fun showImageDescription(augmentedImage: AugmentedImage){
-//        Log.d("pipka", "start" )
-//
-//        var data = databaseHelper.data
-//
-//        var description = "No description"
-//        Log.d("pipka", "end")
-//
-//
-//
-//        while (data.moveToNext()) {
-//            if(data.getString(0) == augmentedImage.name){
-//                description = data.getString(1)
-//            }
-//        }
-//        edit_description.setText(description)
-//
-//        edit_description.visibility = View.VISIBLE
-
         var act = activity as MainActivity
         act.showImageDescriptionMain(augmentedImage.name)
     }
@@ -316,7 +298,7 @@ open class ARFragment : ArFragment() {
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
 
         if (WHAT_DB_USE != "custom") {
-            val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
+            val videoName = "videos/"+augmentedImage.name.substringBeforeLast('.') + ".mp4"
             requireContext().assets.openFd(videoName)
                     .use { descriptor ->
                         mediaPlayer.reset()
@@ -391,14 +373,5 @@ open class ARFragment : ArFragment() {
 
     companion object {
         private const val TAG = "ArVideoFragment"
-
-        private const val TEST_IMAGE_1 = "0.jpg"
-        private const val TEST_IMAGE_2 = "1.jpg"
-        private const val TEST_IMAGE_3 = "2.jpg"
-
-        private const val TEST_VIDEO_1 = "video0.mp4"
-        private const val TEST_VIDEO_2 = "video1.mp4"
-        private const val TEST_VIDEO_3 = "video2.mp4"
-
     }
 }
