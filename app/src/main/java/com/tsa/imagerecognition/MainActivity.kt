@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -20,18 +21,21 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
-import com.squareup.picasso.Picasso
 import common.helpers.DatabaseHelper
 import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import kotlinx.android.synthetic.main.enter_data_dialog.view.*
+import kotlinx.android.synthetic.main.fragment_list_of_default_images.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class MainActivity : AppCompatActivity() {
@@ -49,11 +53,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pickedImage: Bitmap
     private lateinit var pickedVideoPath: String
 
+    private lateinit var listFrag: ListOfDefaultImagesFragment
+
 
     lateinit var arFragment: ARFragment
 
 
     private lateinit var mDatabaseHelper: DatabaseHelper
+
+    val listImages: ArrayList<Bitmap> = ArrayList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,19 +107,18 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
 
-        kek.setOnClickListener{
-            //setupFragment()
-
-           // Picasso.get().load("https://vk.com/im?peers=c257&sel=44403965&z=photo44403965_457242635%2Fmail1170545").into(image_view_fit_to_scan)
-
-            Picasso.get()
-                    .load(R.drawable.logo)
-                    .placeholder(R.drawable.defaultimage)
-                    .fit()
-                    .centerCrop()
-                    .into(image_view_fit_to_scan)
+//        kek.setOnClickListener{
+//            setupFragment()
+//
+//
+//           // Picasso.get().load("https://vk.com/im?peers=c257&sel=44403965&z=photo44403965_457242635%2Fmail1170545").into(image_view_fit_to_scan)
+//
+//
+//        }
+        closeFragment.setOnClickListener{
+            dropFragment()
         }
-
+        listFrag = ListOfDefaultImagesFragment()
 
         image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeLeft() {
@@ -124,13 +131,42 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+
+
     private fun setupFragment() {
-        val listFrag = ListOfDefaultImagesFragment()
+        getImage(this)
+
+        closeFragment.visibility = View.VISIBLE
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.add(R.id.frgmCont, listFrag)
+        frt.add(R.id.frgmCont2, listFrag)
+        frt.commit()
+        Log.d("jij", "Fragment commiteed")
+
+    }
+
+    private fun dropFragment() {
+        closeFragment.visibility = View.GONE
+        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        frt.remove(listFrag)
         frt.commit()
     }
 
+    private fun getImage(context: Context) {
+        var `is`: InputStream
+
+        var files = context.assets.list("imagess")
+
+        Log.d("jij", "list" + files?.size.toString())
+
+        for(i in files!!.indices)
+        {
+            `is` = context.assets.open("imagess/" + files[i])
+            val bitmap = BitmapFactory.decodeStream(`is`)
+            listImages.add(i, bitmap)
+        }
+
+        Log.d("jij", "Images loaded" + listImages.size.toString())
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar_main, menu)
@@ -152,6 +188,10 @@ class MainActivity : AppCompatActivity() {
                     addNewPhotoToDB()
                     return true
                 }
+            }
+            R.id.setup_fragment -> {
+                setupFragment()
+                return true
             }
             else -> return super.onOptionsItemSelected(item)
         }

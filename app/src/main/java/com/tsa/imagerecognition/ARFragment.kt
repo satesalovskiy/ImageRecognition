@@ -36,7 +36,7 @@ import java.io.*
  */
 open class ARFragment : ArFragment() {
 
-    private val DEFAULT_IMAGE_NAME = "images/default.jpg"
+    private val DEFAULT_IMAGE_NAME = "/default.jpg"
     private val DEFAULT_IMAGE_DATABASE = "newdefault.imgdb"
     private val CUSTOM_IMAGE_DATABASE = "custom.imgdb"
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
