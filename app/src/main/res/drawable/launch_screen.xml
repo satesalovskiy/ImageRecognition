@@ -3,12 +3,12 @@
     android:opacity="opaque">
 
     <item
-        android:drawable="@color/colorBlackSplashScreen"/>
+        android:drawable="@color/colorGrey"/>
 
-    <item android:drawable="@drawable/ic_logo_1_4"
+    <item android:drawable="@drawable/ic_logo"
         android:gravity="center"
-        android:height="80dp"
-        android:width="80dp">
+        android:height="130dp"
+        android:width="130dp"
+        android:top="300dp">
     </item>
-
 </layer-list>
