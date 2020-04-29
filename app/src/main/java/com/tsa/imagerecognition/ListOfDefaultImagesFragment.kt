@@ -56,7 +56,7 @@ class ListOfDefaultImagesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         closeFragment.setOnClickListener{
             var act = activity as MainActivity
-            act.dropFragment()
+            act.dropFragment(true)
         }
     }
 }

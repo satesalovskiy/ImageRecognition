@@ -28,7 +28,6 @@ import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import common.helpers.DatabaseHelper
-import common.helpers.SnackbarHelper
 import java.io.*
 
 /**
@@ -115,7 +114,7 @@ open class ARFragment : ArFragment() {
         try {
             augmentedImageDB.addImage(name, bitmap)
         } catch (ex: ImageInsufficientQualityException) {
-            SnackbarHelper.getInstance().showMessage(activity, "Insufficient image quality, choose another image")
+            Toast.makeText(activity, "Insufficient image quality, choose another image", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -134,8 +133,7 @@ open class ARFragment : ArFragment() {
     override fun getSessionConfiguration(session: Session): Config {
         val config = super.getSessionConfiguration(session)
         if (!setupAugmentedImageDatabase(config, session)) {
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Could not setup augmented image database")
+            Toast.makeText(activity, "Could not setup augmented image database", Toast.LENGTH_LONG).show()
         }
         config.focusMode = Config.FocusMode.AUTO
         return config
@@ -156,7 +154,7 @@ open class ARFragment : ArFragment() {
                 try {
                     FileInputStream(file)
                 } catch (ex: FileNotFoundException){
-                    SnackbarHelper.getInstance().showError(activity,"Unable to get access to storage. Check storage permissions")
+                    Toast.makeText(activity,"Unable to get access to storage. Check storage permissions", Toast.LENGTH_LONG).show()
                 }
 
                 if (isCustomFirstTime) {
@@ -319,7 +317,7 @@ open class ARFragment : ArFragment() {
 
             var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
             if(!file.exists()){
-                SnackbarHelper.getInstance().showMessage(activity, "Could not find video file! Try to re-create augmented image")
+                Toast.makeText(activity, "Could not find video file! Try to re-create augmented image", Toast.LENGTH_LONG).show()
             } else {
                 mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
                 mediaPlayer.isLooping = true
@@ -362,8 +360,7 @@ open class ARFragment : ArFragment() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.e(TAG, "Sceneform requires Android N or later")
 
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Sceneform requires Android N or later")
+          Toast.makeText(activity, "Sceneform requires Android N or later", Toast.LENGTH_LONG).show()
         }
 
         val openGlVersionString = (context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
@@ -371,8 +368,7 @@ open class ARFragment : ArFragment() {
                 .glEsVersion
         if (java.lang.Double.parseDouble(openGlVersionString) < MIN_OPENGL_VERSION) {
             Log.e(TAG, "Sceneform requires OpenGL ES 3.0 or later")
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Sceneform requires OpenGL ES 3.0 or later")
+            Toast.makeText(activity, "Sceneform requires OpenGL ES 3.0 or later", Toast.LENGTH_LONG).show()
         }
     }
 

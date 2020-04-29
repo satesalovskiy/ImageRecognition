@@ -1,18 +1,12 @@
 
 package com.tsa.imagerecognition
 
-//import android.support.v7.app.AppCompatActivity
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -25,14 +19,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
 import common.helpers.DatabaseHelper
-import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet.view.*
-import kotlinx.android.synthetic.main.enter_data_dialog.view.*
-import kotlinx.android.synthetic.main.fragment_list_of_default_images.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.InputStream
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -50,16 +40,19 @@ class MainActivity : AppCompatActivity() {
 
     private var checkedPosition: String? = "default"
 
-    private lateinit var pickedImage: Bitmap
-    private lateinit var pickedVideoPath: String
+
 
     private lateinit var listFrag: ListOfDefaultImagesFragment
 
-
-    lateinit var arFragment: ARFragment
-
-
     private lateinit var mDatabaseHelper: DatabaseHelper
+
+
+
+    public lateinit var arFragment: ARFragment
+
+    lateinit var addImageFragment: AddNewImagesFragment
+
+
 
     val listImages: ArrayList<Bitmap> = ArrayList()
 
@@ -106,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         //Toast.makeText(this, auth.uid, Toast.LENGTH_LONG).show()
 
 
+
         checkPermissions()
 
 
@@ -126,34 +120,31 @@ class MainActivity : AppCompatActivity() {
 
 
         listFrag = ListOfDefaultImagesFragment()
+        addImageFragment = AddNewImagesFragment()
 
-        image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                image_description.visibility = View.GONE
-            }
-
-            override fun onSwipeTop() {
-
-            }
-        })
     }
 
 
 
-    private fun setupFragment() {
-        getImage(this)
+    private fun setupFragment(fragment: Fragment) {
+        if(fragment is ListOfDefaultImagesFragment) getImage(this)
 
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.add(R.id.frgmCont2, listFrag)
+        frt.replace(R.id.frgmCont2, fragment)
         frt.commit()
         Log.d("jij", "Fragment commiteed")
 
     }
 
-    public fun dropFragment() {
+    public fun dropFragment(listFragment: Boolean) {
 
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.remove(listFrag)
+
+        if(listFragment){
+            frt.remove(listFrag)
+        } else {
+            frt.remove(addImageFragment)
+        }
         frt.commit()
     }
 
@@ -196,7 +187,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             R.id.setup_fragment -> {
-                setupFragment()
+                setupFragment(listFrag)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -222,57 +213,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun addNewPhotoToDB() {
         //arFragment.addNewImage()
-        showEnterDataDialog()
-    }
+        //showEnterDataDialog()
+
+        setupFragment(addImageFragment)
 
 
-    private fun showEnterDataDialog() {
-        val builder = AlertDialog.Builder(this)
-        val inflater = this.layoutInflater
-        val view1 = inflater.inflate(R.layout.enter_data_dialog, null)
-
-        view1.edit_image.setOnClickListener {
-            chooseImage()
-        }
-
-        view1.edit_video.setOnClickListener {
-            chooseVideo()
-        }
-
-
-        builder.setView(view1)
-                .setPositiveButton("Add"){ dialogInterface, i ->
-
-                    val name = view1.edit_name.text.toString()
-                    val description = view1.edit_description.text.toString()
-
-                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized || description.isEmpty()){
-                        SnackbarHelper.getInstance().showMessage(this, "You forgot to initialize something!")
-                    } else {
-                        saveEverythingInStorage(name, description)
-                    }
-                }
-                .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
-                .setTitle("Adding new image")
-
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    private fun saveEverythingInStorage(name: String, description: String) {
-        addDataToSQL(name, description)
-        saveImageToDB(name)
-        saveVideoToInternalStorage(name)
-    }
-
-    private fun addDataToSQL(name: String, description: String) {
-        var insertData = mDatabaseHelper.addData(name, description)
-
-        if(insertData){
-            Toast.makeText(this, "Data added", Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, "Failed", Toast.LENGTH_LONG).show()
-        }
     }
 
      fun showImageDescriptionMain(name:String, default: Boolean ){
@@ -312,70 +257,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun chooseVideo() {
-
-//        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-//        startActivityForResult(galleryIntent, 222)
-
-        val videoPickerIntent = Intent(Intent.ACTION_PICK)
-        videoPickerIntent.type = "video/*"
-        startActivityForResult(videoPickerIntent, 222)
-    }
-
-    private fun chooseImage() {
-        val photoPickerIntent = Intent(Intent.ACTION_PICK)
-        photoPickerIntent.type = "image/*"
-        startActivityForResult(photoPickerIntent, 111)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when(requestCode){
-            111 -> {
-                if(resultCode == Activity.RESULT_OK && data != null){
-                    val selectedImage = data.data
-                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedImage)
-                    pickedImage = bitmap
-                    Toast.makeText(this, "Image picked",Toast.LENGTH_LONG).show()
-
-                }
-            }
-            222 -> {
-                if(resultCode == Activity.RESULT_OK && data != null){
-                    val selectedVideo = data.data
-                    val selectedVideoPath = getPath(selectedVideo!!)
-                    pickedVideoPath = selectedVideoPath
-                    Log.d("path ",selectedVideoPath)
-                    //saveVideoToInternalStorage(selectedVideoPath)
-                }
-            }
-        }
-    }
 
 
-    private fun saveVideoToInternalStorage (name: String) {
-        val selectedVideoFile : File = File(pickedVideoPath)  // 2
-        val selectedVideoFileExtension : String = selectedVideoFile.extension  // 3
-        val internalStorageVideoFileName : String = name +"."+ selectedVideoFileExtension
-        var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
-        var fos = FileOutputStream(resultFile)
-        fos.write(selectedVideoFile.readBytes())
-        fos.close()
-        Log.d("File", "File saved")
 
-        var file = File(Environment.getExternalStorageDirectory()
-                          .getAbsolutePath(), internalStorageVideoFileName)
-        Log.d("File", "File reed" + file.path)
 
-       // storeFileInInternalStorage(selectedVideoFile, internalStorageVideoFileName)
 
-//        val file : File = application.getFileStreamPath("" + filesDir + "/" +internalStorageVideoFileName)
-
-       // var file = File( getFilesDir(), internalStorageVideoFileName)
-      //  Log.d("savein", file.path.toString())
-        //videovvv.setVideoPath(file.path.toString())
-    }
 
 
     private fun storeFileInInternalStorage(selectedFile: File, internalStorageFileName: String) {
@@ -394,29 +280,8 @@ class MainActivity : AppCompatActivity() {
             outputStream.close()  // 6
         }
     }
-    private fun saveImageToDB (name: String) {
-        arFragment.addNewImage(pickedImage, name)
-    }
 
-    private fun getPath(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Video.Media.DATA)
 
-        //Cursor cursor = getContentResolver().query(uri, projection, null, null, null)
-
-        val cursor = contentResolver.query(uri,projection, null, null, null)
-
-        if (cursor != null) {
-            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-
-            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-            cursor.moveToFirst()
-            return cursor.getString(column_index);
-        } else {
-            Toast.makeText(this, "Cursor is null", Toast.LENGTH_LONG).show()
-            return ""
-        }
-    }
 
     private fun showSwitchDialog() {
         val listItems = arrayOf("Custom", "Default")
@@ -435,13 +300,11 @@ class MainActivity : AppCompatActivity() {
             when(i){
                 0 -> {
                     writeInPrefs("custom")
-                    SnackbarHelper.getInstance()
-                            .showMessage(this, "Changes will be committed after restart your app")
+                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
                 }
                 1 ->{
                     writeInPrefs("default")
-                    SnackbarHelper.getInstance()
-                            .showMessage(this, "Changes will be committed after restart your app")
+                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
                 }
             }
 
@@ -479,7 +342,7 @@ class MainActivity : AppCompatActivity() {
                 permissions.forEachIndexed{ index, i ->
                     if(grantResults.isNotEmpty() && (grantResults[index] != PackageManager.PERMISSION_GRANTED)) {
                         if(i == android.Manifest.permission.CAMERA){
-                            SnackbarHelper.getInstance().showError(this,"You can't use app without CAMERA permission")
+                            Toast.makeText(this,"You can't use app without CAMERA permission", Toast.LENGTH_LONG).show()
                         } else if (i == android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                             Toast.makeText(this, "You can't use custom image database without STORAGE permission", Toast.LENGTH_LONG).show()
                             writeInPrefs("default")
