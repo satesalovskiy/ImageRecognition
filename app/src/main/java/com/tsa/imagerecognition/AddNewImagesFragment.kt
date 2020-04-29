@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.squareup.picasso.Picasso
 import common.helpers.DatabaseHelper
 import kotlinx.android.synthetic.main.fragment_add_new_images.*
 import kotlinx.android.synthetic.main.fragment_add_new_images.view.*
@@ -92,6 +93,13 @@ class AddNewImagesFragment : Fragment() {
         when(requestCode){
             111 -> {
                 if(resultCode == Activity.RESULT_OK && data != null){
+
+                    Picasso.get()
+                            .load(R.drawable.defaultimage2_ready)
+                            .fit()
+                            .centerInside()
+                            .into(edit_image)
+
                     val selectedImage = data.data
                     val bitmap = MediaStore.Images.Media.getBitmap(activity?.contentResolver, selectedImage)
                     pickedImage = bitmap
@@ -101,10 +109,18 @@ class AddNewImagesFragment : Fragment() {
             }
             222 -> {
                 if(resultCode == Activity.RESULT_OK && data != null){
+
+                    Picasso.get()
+                            .load(R.drawable.defaultvideo_ready)
+                            .fit()
+                            .centerInside()
+                            .into(edit_video)
+
                     val selectedVideo = data.data
                     val selectedVideoPath = getPath(selectedVideo!!)
                     pickedVideoPath = selectedVideoPath
                     Log.d("path ",selectedVideoPath)
+                    Toast.makeText(activity, "video picked", Toast.LENGTH_LONG).show()
                     //saveVideoToInternalStorage(selectedVideoPath)
                 }
             }
