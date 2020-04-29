@@ -96,6 +96,8 @@ class MainActivity : AppCompatActivity() {
         frt.add(R.id.frgmCont, arFragment)
         frt.commit()
 
+
+        toolbar.title = ""
         setSupportActionBar(toolbar)
        // supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -115,9 +117,14 @@ class MainActivity : AppCompatActivity() {
 //
 //
 //        }
-        closeFragment.setOnClickListener{
-            dropFragment()
-        }
+
+//
+//        closeFragment.setOnClickListener{
+//            dropFragment()
+//        }
+
+
+
         listFrag = ListOfDefaultImagesFragment()
 
         image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
@@ -136,7 +143,6 @@ class MainActivity : AppCompatActivity() {
     private fun setupFragment() {
         getImage(this)
 
-        closeFragment.visibility = View.VISIBLE
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
         frt.add(R.id.frgmCont2, listFrag)
         frt.commit()
@@ -144,8 +150,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun dropFragment() {
-        closeFragment.visibility = View.GONE
+    public fun dropFragment() {
+
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
         frt.remove(listFrag)
         frt.commit()
@@ -247,6 +253,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
+                .setTitle("Adding new image")
 
         val dialog = builder.create()
         dialog.show()

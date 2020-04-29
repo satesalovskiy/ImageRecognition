@@ -36,7 +36,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#14ffffff"
+        android:background="#00333745"
         app:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
     <Button
@@ -63,22 +63,12 @@
 
         <FrameLayout
             android:id="@+id/frgmCont2"
-            android:layout_width="400dp"
-            android:layout_height="400dp"
+            android:layout_width="340dp"
+            android:layout_height="470dp"
             android:layout_gravity="center">
-
         </FrameLayout>
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-           android:id="@+id/closeFragment"
-            android:text = "Close"
-            android:visibility="gone"/>
     </LinearLayout>
-
-
-
 
     <LinearLayout
         android:id="@+id/image_description"
