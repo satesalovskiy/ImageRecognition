@@ -1,6 +1,10 @@
 
 package com.tsa.imagerecognition
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -14,6 +18,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -59,11 +65,19 @@ class MainActivity : AppCompatActivity() {
 
     val listImages: ArrayList<Bitmap> = ArrayList()
 
+    private lateinit var animation1: ObjectAnimator
+    private lateinit var animation2: ObjectAnimator
+    private lateinit var animation3: ObjectAnimator
+    private lateinit var animation4: ObjectAnimator
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        initializeAnimations()
+
 
         mDatabaseHelper = DatabaseHelper(this)
         enterDataToMap()
@@ -125,6 +139,51 @@ class MainActivity : AppCompatActivity() {
         listFrag = ListOfDefaultImagesFragment()
         addImageFragment = AddNewImagesFragment()
 
+       // showMovePhoneAnimation()
+
+        kek.setOnClickListener{
+            stopMovePhoneAnimation()
+        }
+
+    }
+
+
+    private fun initializeAnimations() {
+        animation1 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 100F)
+        animation2 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", -100F)
+        animation3 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 0F)
+        animation4 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 0F)
+    }
+
+
+    val set = AnimatorSet()
+    fun showMovePhoneAnimation() {
+        image_view_fit_to_scan.visibility = View.VISIBLE
+
+        set.playSequentially(animation1, animation3, animation2, animation4)
+        set.interpolator = DecelerateInterpolator()
+        set.duration = 2000
+
+        set.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                set.start()
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+                super.onAnimationCancel(animation)
+            }
+        })
+        set.start()
+    }
+
+    fun stopMovePhoneAnimation() {
+        animation1.cancel()
+        animation2.cancel()
+        animation3.cancel()
+        animation4.cancel()
+        set.cancel()
+        image_view_fit_to_scan.visibility = View.GONE
     }
 
 

@@ -15,10 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.ar.core.AugmentedImage
-import com.google.ar.core.AugmentedImageDatabase
-import com.google.ar.core.Config
-import com.google.ar.core.Session
+import com.google.ar.core.*
 import com.google.ar.core.exceptions.ImageInsufficientQualityException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
@@ -240,6 +237,14 @@ open class ARFragment : ArFragment() {
 
         val nonFullTrackingImages = updatedAugmentedImages.filter { it.trackingMethod != AugmentedImage.TrackingMethod.FULL_TRACKING }
 
+        val pausedImages = updatedAugmentedImages.filter { it.trackingState == TrackingState.PAUSED }
+
+        if(pausedImages.isNotEmpty()) {
+            val act = activity as MainActivity
+            act.showMovePhoneAnimation()
+        }
+
+
         activeAugmentedImage?.let { activeAugmentedImage ->
             if (isArVideoPlaying() && nonFullTrackingImages.any { it.index == activeAugmentedImage.index }) {
                 pauseArVideo()
@@ -248,6 +253,8 @@ open class ARFragment : ArFragment() {
 
         val fullTrackingImages = updatedAugmentedImages.filter { it.trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING }
         if (fullTrackingImages.isEmpty()) return
+
+
 
         activeAugmentedImage?.let { activeAugmentedImage ->
             if (fullTrackingImages.any { it.index == activeAugmentedImage.index }) {
@@ -299,6 +306,9 @@ open class ARFragment : ArFragment() {
     }
 
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
+
+        var act = activity as MainActivity
+        act.stopMovePhoneAnimation()
 
         if (WHAT_DB_USE != "custom") {
             val videoName = "videos/"+augmentedImage.name.substringBeforeLast('.') + ".mp4"
