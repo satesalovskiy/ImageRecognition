@@ -1,22 +1,25 @@
 
 package com.tsa.imagerecognition
 
-//import android.support.v7.app.AppCompatActivity
-import android.app.Activity
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
+import android.text.Html
+import android.text.SpannableString
+import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -25,14 +28,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
 import common.helpers.DatabaseHelper
-import common.helpers.SnackbarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet.view.*
-import kotlinx.android.synthetic.main.enter_data_dialog.view.*
-import kotlinx.android.synthetic.main.fragment_list_of_default_images.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.InputStream
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -50,24 +49,35 @@ class MainActivity : AppCompatActivity() {
 
     private var checkedPosition: String? = "default"
 
-    private lateinit var pickedImage: Bitmap
-    private lateinit var pickedVideoPath: String
+
 
     private lateinit var listFrag: ListOfDefaultImagesFragment
 
-
-    lateinit var arFragment: ARFragment
-
-
     private lateinit var mDatabaseHelper: DatabaseHelper
 
+
+
+    public lateinit var arFragment: ARFragment
+
+    lateinit var addImageFragment: AddNewImagesFragment
+
+
+
     val listImages: ArrayList<Bitmap> = ArrayList()
+
+    private lateinit var animation1: ObjectAnimator
+    private lateinit var animation2: ObjectAnimator
+    private lateinit var animation3: ObjectAnimator
+    private lateinit var animation4: ObjectAnimator
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        initializeAnimations()
+
 
         mDatabaseHelper = DatabaseHelper(this)
         enterDataToMap()
@@ -96,12 +106,15 @@ class MainActivity : AppCompatActivity() {
         frt.add(R.id.frgmCont, arFragment)
         frt.commit()
 
+
+        toolbar.title = ""
         setSupportActionBar(toolbar)
        // supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
        // supportFragmentManager.findFragmentById(R.id.ux_fragment)
         //auth = FirebaseAuth.getInstance()
         //Toast.makeText(this, auth.uid, Toast.LENGTH_LONG).show()
+
 
 
         checkPermissions()
@@ -115,39 +128,85 @@ class MainActivity : AppCompatActivity() {
 //
 //
 //        }
-        closeFragment.setOnClickListener{
-            dropFragment()
-        }
-        listFrag = ListOfDefaultImagesFragment()
 
-        image_description.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                image_description.visibility = View.GONE
+//
+//        closeFragment.setOnClickListener{
+//            dropFragment()
+//        }
+
+
+
+        listFrag = ListOfDefaultImagesFragment()
+        addImageFragment = AddNewImagesFragment()
+
+       // showMovePhoneAnimation()
+
+        kek.setOnClickListener{
+            stopMovePhoneAnimation()
+        }
+
+    }
+
+
+    private fun initializeAnimations() {
+        animation1 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 100F)
+        animation2 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", -100F)
+        animation3 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 0F)
+        animation4 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 0F)
+    }
+
+
+    val set = AnimatorSet()
+    fun showMovePhoneAnimation() {
+        image_view_fit_to_scan.visibility = View.VISIBLE
+
+        set.playSequentially(animation1, animation3, animation2, animation4)
+        set.interpolator = DecelerateInterpolator()
+        set.duration = 2000
+
+        set.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                set.start()
             }
 
-            override fun onSwipeTop() {
-
+            override fun onAnimationCancel(animation: Animator?) {
+                super.onAnimationCancel(animation)
             }
         })
+        set.start()
+    }
+
+    fun stopMovePhoneAnimation() {
+        animation1.cancel()
+        animation2.cancel()
+        animation3.cancel()
+        animation4.cancel()
+        set.cancel()
+        image_view_fit_to_scan.visibility = View.GONE
     }
 
 
 
-    private fun setupFragment() {
-        getImage(this)
+    private fun setupFragment(fragment: Fragment) {
+        if(fragment is ListOfDefaultImagesFragment) getImage(this)
 
-        closeFragment.visibility = View.VISIBLE
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.add(R.id.frgmCont2, listFrag)
+        frt.replace(R.id.frgmCont2, fragment)
         frt.commit()
         Log.d("jij", "Fragment commiteed")
 
     }
 
-    private fun dropFragment() {
-        closeFragment.visibility = View.GONE
+    public fun dropFragment(listFragment: Boolean) {
+
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.remove(listFrag)
+
+        if(listFragment){
+            frt.remove(listFrag)
+        } else {
+            frt.remove(addImageFragment)
+        }
         frt.commit()
     }
 
@@ -190,7 +249,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             R.id.setup_fragment -> {
-                setupFragment()
+                setupFragment(listFrag)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -216,56 +275,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun addNewPhotoToDB() {
         //arFragment.addNewImage()
-        showEnterDataDialog()
-    }
+        //showEnterDataDialog()
+
+        setupFragment(addImageFragment)
 
 
-    private fun showEnterDataDialog() {
-        val builder = AlertDialog.Builder(this)
-        val inflater = this.layoutInflater
-        val view1 = inflater.inflate(R.layout.enter_data_dialog, null)
-
-        view1.edit_image.setOnClickListener {
-            chooseImage()
-        }
-
-        view1.edit_video.setOnClickListener {
-            chooseVideo()
-        }
-
-
-        builder.setView(view1)
-                .setPositiveButton("Add"){ dialogInterface, i ->
-
-                    val name = view1.edit_name.text.toString()
-                    val description = view1.edit_description.text.toString()
-
-                    if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized || description.isEmpty()){
-                        SnackbarHelper.getInstance().showMessage(this, "You forgot to initialize something!")
-                    } else {
-                        saveEverythingInStorage(name, description)
-                    }
-                }
-                .setNegativeButton("Cancel"){ dialogInterface, _ -> dialogInterface.cancel() }
-
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    private fun saveEverythingInStorage(name: String, description: String) {
-        addDataToSQL(name, description)
-        saveImageToDB(name)
-        saveVideoToInternalStorage(name)
-    }
-
-    private fun addDataToSQL(name: String, description: String) {
-        var insertData = mDatabaseHelper.addData(name, description)
-
-        if(insertData){
-            Toast.makeText(this, "Data added", Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, "Failed", Toast.LENGTH_LONG).show()
-        }
     }
 
      fun showImageDescriptionMain(name:String, default: Boolean ){
@@ -276,8 +290,11 @@ class MainActivity : AppCompatActivity() {
             Log.d("pop", description.toString())
 
             image_desc.visibility = View.VISIBLE
+
             image_desc.bottom_sheet_description.text = description
-            image_desc.bottom_sheet_topic.text = "Description for image: " + name
+
+            var newText = "Information about: <b> $name </b>"
+            image_desc.bottom_sheet_topic.text = (Html.fromHtml(newText))
         } else {
             var data = mDatabaseHelper.data
             var description = "No description"
@@ -294,82 +311,11 @@ class MainActivity : AppCompatActivity() {
 //        image_description.visibility = View.VISIBLE
             image_desc.visibility = View.VISIBLE
             image_desc.bottom_sheet_description.text = description
-            image_desc.bottom_sheet_topic.text = "Description for image: " + name
+
+            var newText = "Description for image: <b> $name </b>"
+            image_desc.bottom_sheet_topic.text = (Html.fromHtml(newText))
         }
     }
-
-    private fun getStringFromResoursesByName(name: String) : Int {
-        val resourseId = resources.getIdentifier(name.substringBeforeLast("."), "string", packageName)
-        Log.d("pop", name)
-        return resourseId
-    }
-
-
-    private fun chooseVideo() {
-
-//        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-//        startActivityForResult(galleryIntent, 222)
-
-        val videoPickerIntent = Intent(Intent.ACTION_PICK)
-        videoPickerIntent.type = "video/*"
-        startActivityForResult(videoPickerIntent, 222)
-    }
-
-    private fun chooseImage() {
-        val photoPickerIntent = Intent(Intent.ACTION_PICK)
-        photoPickerIntent.type = "image/*"
-        startActivityForResult(photoPickerIntent, 111)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when(requestCode){
-            111 -> {
-                if(resultCode == Activity.RESULT_OK && data != null){
-                    val selectedImage = data.data
-                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedImage)
-                    pickedImage = bitmap
-                    Toast.makeText(this, "Image picked",Toast.LENGTH_LONG).show()
-
-                }
-            }
-            222 -> {
-                if(resultCode == Activity.RESULT_OK && data != null){
-                    val selectedVideo = data.data
-                    val selectedVideoPath = getPath(selectedVideo!!)
-                    pickedVideoPath = selectedVideoPath
-                    Log.d("path ",selectedVideoPath)
-                    //saveVideoToInternalStorage(selectedVideoPath)
-                }
-            }
-        }
-    }
-
-
-    private fun saveVideoToInternalStorage (name: String) {
-        val selectedVideoFile : File = File(pickedVideoPath)  // 2
-        val selectedVideoFileExtension : String = selectedVideoFile.extension  // 3
-        val internalStorageVideoFileName : String = name +"."+ selectedVideoFileExtension
-        var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
-        var fos = FileOutputStream(resultFile)
-        fos.write(selectedVideoFile.readBytes())
-        fos.close()
-        Log.d("File", "File saved")
-
-        var file = File(Environment.getExternalStorageDirectory()
-                          .getAbsolutePath(), internalStorageVideoFileName)
-        Log.d("File", "File reed" + file.path)
-
-       // storeFileInInternalStorage(selectedVideoFile, internalStorageVideoFileName)
-
-//        val file : File = application.getFileStreamPath("" + filesDir + "/" +internalStorageVideoFileName)
-
-       // var file = File( getFilesDir(), internalStorageVideoFileName)
-      //  Log.d("savein", file.path.toString())
-        //videovvv.setVideoPath(file.path.toString())
-    }
-
 
     private fun storeFileInInternalStorage(selectedFile: File, internalStorageFileName: String) {
 
@@ -387,34 +333,13 @@ class MainActivity : AppCompatActivity() {
             outputStream.close()  // 6
         }
     }
-    private fun saveImageToDB (name: String) {
-        arFragment.addNewImage(pickedImage, name)
-    }
 
-    private fun getPath(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Video.Media.DATA)
 
-        //Cursor cursor = getContentResolver().query(uri, projection, null, null, null)
-
-        val cursor = contentResolver.query(uri,projection, null, null, null)
-
-        if (cursor != null) {
-            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-
-            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-            cursor.moveToFirst()
-            return cursor.getString(column_index);
-        } else {
-            Toast.makeText(this, "Cursor is null", Toast.LENGTH_LONG).show()
-            return ""
-        }
-    }
 
     private fun showSwitchDialog() {
         val listItems = arrayOf("Custom", "Default")
         val mBuilder = AlertDialog.Builder(this@MainActivity)
-        mBuilder.setTitle("Choose an item")
+        mBuilder.setTitle("Choose an database")
 
         var checkedItem = 1
         if(checkedPosition == "default"){
@@ -428,13 +353,11 @@ class MainActivity : AppCompatActivity() {
             when(i){
                 0 -> {
                     writeInPrefs("custom")
-                    SnackbarHelper.getInstance()
-                            .showMessage(this, "Changes will be committed after restart your app")
+                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
                 }
                 1 ->{
                     writeInPrefs("default")
-                    SnackbarHelper.getInstance()
-                            .showMessage(this, "Changes will be committed after restart your app")
+                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
                 }
             }
 
@@ -456,7 +379,8 @@ class MainActivity : AppCompatActivity() {
 
             ActivityCompat.requestPermissions(this,
                     arrayOf(android.Manifest.permission.CAMERA,
-                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                    android.Manifest.permission.READ_EXTERNAL_STORAGE),
                     321)
 
         }
@@ -472,7 +396,7 @@ class MainActivity : AppCompatActivity() {
                 permissions.forEachIndexed{ index, i ->
                     if(grantResults.isNotEmpty() && (grantResults[index] != PackageManager.PERMISSION_GRANTED)) {
                         if(i == android.Manifest.permission.CAMERA){
-                            SnackbarHelper.getInstance().showError(this,"You can't use app without CAMERA permission")
+                            Toast.makeText(this,"You can't use app without CAMERA permission", Toast.LENGTH_LONG).show()
                         } else if (i == android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                             Toast.makeText(this, "You can't use custom image database without STORAGE permission", Toast.LENGTH_LONG).show()
                             writeInPrefs("default")
@@ -495,94 +419,94 @@ class MainActivity : AppCompatActivity() {
 
     private var descriptionByName: HashMap<String, String> = HashMap()
     private fun enterDataToMap(){
-        descriptionByName.put("nike", "Web site: https://www.nike.com \n " +
+        descriptionByName.put("nike", "Web site: https://www.nike.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=IHcWPVbDArU")
 
-        descriptionByName.put("adidas", "Web site: https://www.adidas.com \n " +
+        descriptionByName.put("adidas", "Web site: https://www.adidas.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=_sIaPgpM2v0")
 
-        descriptionByName.put("puma", "Web site: https://puma.com \n " +
+        descriptionByName.put("puma", "Web site: https://puma.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=gnaH-R3yTDk")
 
-        descriptionByName.put("converse", "Web site: https://converse.com \n " +
+        descriptionByName.put("converse", "Web site: https://converse.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=nEZrlU9mO58")
 
-        descriptionByName.put("skechers", "Web site: https://www.skechers.com \n " +
+        descriptionByName.put("skechers", "Web site: https://www.skechers.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=ZEv-W-Y3-8E")
 
-        descriptionByName.put("columbia", "Web site: https://www.columbia.com \n " +
+        descriptionByName.put("columbia", "Web site: https://www.columbia.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=6asVmQZ2B5w&t=88s")
 
-        descriptionByName.put("thenorthface", "Web site: https://thenorthface.com \n " +
+        descriptionByName.put("thenorthface", "Web site: https://thenorthface.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=gPPzWqAaV88&t=1s")
 
-        descriptionByName.put("reebok", "Web site: https://www.reebok.com \n " +
+        descriptionByName.put("reebok", "Web site: https://www.reebok.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=W0X66M1MgHU&t=3s")
 
-        descriptionByName.put("kappa", "Web site: https://kappa-usa.com \n " +
+        descriptionByName.put("kappa", "Web site: https://kappa-usa.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=oxzwaStxxkU")
 
-        descriptionByName.put("santacruz", "Web site: https://www.santacruzbicycles.com \n " +
+        descriptionByName.put("santacruz", "Web site: https://www.santacruzbicycles.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=P8db5IFErho")
 
-        descriptionByName.put("intel", "Web site: https://www.intel.com \n " +
+        descriptionByName.put("intel", "Web site: https://www.intel.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=_VMYPLXnd7E")
 
-        descriptionByName.put("huawei", "Web site: https://shop.huawei.com \n " +
+        descriptionByName.put("huawei", "Web site: https://shop.huawei.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=_m3PIkZW6o8")
 
-        descriptionByName.put("harman", "Web site: https://harmankardon.com \n " +
+        descriptionByName.put("harman", "Web site: https://harmankardon.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=LKdBU7p9178")
 
-        descriptionByName.put("epam", "Web site: https://www.epam-group.ru \n " +
+        descriptionByName.put("epam", "Web site: https://www.epam-group.ru \n\n " +
                 "Video link: https://www.youtube.com/watch?v=sBst40WlH74")
 
-        descriptionByName.put("microsoft", "Web site: https://www.microsoft.com \n " +
+        descriptionByName.put("microsoft", "Web site: https://www.microsoft.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=miM6mBAfA8g")
 
-        descriptionByName.put("google", "Web site: https://www.google.com \n " +
+        descriptionByName.put("google", "Web site: https://www.google.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=nP7JtxdxdwI")
 
-        descriptionByName.put("jetbrains", "Web site: https://www.jetbrains.com \n " +
+        descriptionByName.put("jetbrains", "Web site: https://www.jetbrains.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=rhAunB7UQFQ")
 
-        descriptionByName.put("oracle", "Web site: https://www.oracle.com \n " +
+        descriptionByName.put("oracle", "Web site: https://www.oracle.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=C7Bp07T5img")
 
-        descriptionByName.put("samsung", "Web site: https://www.samsung.com \n " +
+        descriptionByName.put("samsung", "Web site: https://www.samsung.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=NwFvlwe7HPo")
 
-        descriptionByName.put("nestle", "Web site: https://www.nestle.ru \n " +
+        descriptionByName.put("nestle", "Web site: https://www.nestle.ru \n\n " +
                 "Video link: https://www.youtube.com/watch?v=jZtEXMBbaZg&feature=emb_title")
 
-        descriptionByName.put("danone", "Web site: http://www.danone.com \n " +
+        descriptionByName.put("danone", "Web site: http://www.danone.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=DpoSFf-oNdo")
 
-        descriptionByName.put("cocacola", "Web site: https://www.coca-cola.com \n " +
+        descriptionByName.put("cocacola", "Web site: https://www.coca-cola.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=8mKFF5K4aUI")
 
-        descriptionByName.put("pepsico", "Web site: https://pepsi.com \n " +
+        descriptionByName.put("pepsico", "Web site: https://pepsi.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=_LMySyD0WGc")
 
-        descriptionByName.put("snickers", "Web site:  https://snickers.com \n " +
+        descriptionByName.put("snickers", "Web site:  https://snickers.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=2Acdwxhec1s")
 
-        descriptionByName.put("mcdonalds", "Web site:  https://mcdonalds.com \n " +
+        descriptionByName.put("mcdonalds", "Web site:  https://mcdonalds.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=2alwcW6Bvso")
 
-        descriptionByName.put("burgerking", "Web site: https://burgerking.com \n " +
+        descriptionByName.put("burgerking", "Web site: https://burgerking.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=KKlDNsPBTxg")
 
-        descriptionByName.put("subway", "Web site: https://subway.com \n " +
+        descriptionByName.put("subway", "Web site: https://subway.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=gYNYq5MTGx8")
 
-        descriptionByName.put("starbucks", "Web site: https://www.starbucks.com \n " +
+        descriptionByName.put("starbucks", "Web site: https://www.starbucks.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=SuEjGt-TPK0")
 
-        descriptionByName.put("kfc", "Web site: https://www.kfc.com \n " +
+        descriptionByName.put("kfc", "Web site: https://www.kfc.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=pWRYvUZhBsA&feature=emb_title")
 
-        descriptionByName.put("lays", "Web site: hßttps://lays.com \n " +
+        descriptionByName.put("lays", "Web site: hßttps://lays.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=lSaZkOX-FWw")
     }
 }

@@ -36,7 +36,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#14ffffff"
+        android:background="#00333745"
         app:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
     <Button
@@ -45,15 +45,17 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Add fragment"
+        android:layout_marginTop="50dp"
         android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/image_view_fit_to_scan"
-        android:layout_marginTop="100dp"
+        android:src="@drawable/ic_move_phone"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -63,22 +65,12 @@
 
         <FrameLayout
             android:id="@+id/frgmCont2"
-            android:layout_width="400dp"
-            android:layout_height="400dp"
+            android:layout_width="340dp"
+            android:layout_height="470dp"
             android:layout_gravity="center">
-
         </FrameLayout>
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-           android:id="@+id/closeFragment"
-            android:text = "Close"
-            android:visibility="gone"/>
     </LinearLayout>
-
-
-
 
     <LinearLayout
         android:id="@+id/image_description"

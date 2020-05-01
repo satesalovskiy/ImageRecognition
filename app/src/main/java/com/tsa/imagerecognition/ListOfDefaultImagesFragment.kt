@@ -34,7 +34,8 @@ class ListOfDefaultImagesFragment : Fragment() {
 
         listOfImages = viewImages.list_of_images
 
-        listOfImages.layoutManager = GridLayoutManager(context, 2 )
+        listOfImages.layoutManager = GridLayoutManager(context, 2 ) as RecyclerView.LayoutManager
+
 
         var act = activity as MainActivity
 
@@ -49,5 +50,13 @@ class ListOfDefaultImagesFragment : Fragment() {
 
 
         return viewImages
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        closeFragment.setOnClickListener{
+            var act = activity as MainActivity
+            act.dropFragment(true)
+        }
     }
 }

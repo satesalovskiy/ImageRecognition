@@ -15,10 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.ar.core.AugmentedImage
-import com.google.ar.core.AugmentedImageDatabase
-import com.google.ar.core.Config
-import com.google.ar.core.Session
+import com.google.ar.core.*
 import com.google.ar.core.exceptions.ImageInsufficientQualityException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
@@ -28,7 +25,6 @@ import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import common.helpers.DatabaseHelper
-import common.helpers.SnackbarHelper
 import java.io.*
 
 /**
@@ -103,7 +99,10 @@ open class ARFragment : ArFragment() {
 
     private fun serialazeDB() {
         //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
-        var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
+        //var file = File(Environment.getExternalStorageDirectory(), "/custom.imgdb")
+
+        var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "custom.imgdb")
 
         val outputStr: FileOutputStream = FileOutputStream(file)
         augmentedImageDB.serialize(outputStr)
@@ -115,7 +114,7 @@ open class ARFragment : ArFragment() {
         try {
             augmentedImageDB.addImage(name, bitmap)
         } catch (ex: ImageInsufficientQualityException) {
-            SnackbarHelper.getInstance().showMessage(activity, "Insufficient image quality, choose another image")
+            Toast.makeText(activity, "Insufficient image quality, choose another image", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -134,8 +133,7 @@ open class ARFragment : ArFragment() {
     override fun getSessionConfiguration(session: Session): Config {
         val config = super.getSessionConfiguration(session)
         if (!setupAugmentedImageDatabase(config, session)) {
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Could not setup augmented image database")
+            Toast.makeText(activity, "Could not setup augmented image database", Toast.LENGTH_LONG).show()
         }
         config.focusMode = Config.FocusMode.AUTO
         return config
@@ -147,7 +145,10 @@ open class ARFragment : ArFragment() {
             if (WHAT_DB_USE == "custom") {
                 //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
 
-                var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+               // var file = File(Environment.getExternalStorageDirectory(), "/custom.imgdb")
+
+                var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "custom.imgdb")
+
 
 
 
@@ -156,7 +157,8 @@ open class ARFragment : ArFragment() {
                 try {
                     FileInputStream(file)
                 } catch (ex: FileNotFoundException){
-                    SnackbarHelper.getInstance().showError(activity,"Unable to get access to storage. Check storage permissions")
+                    if(!isCustomFirstTime)
+                        Toast.makeText(activity,"Unable to get access to storage. Check storage permissions", Toast.LENGTH_LONG).show()
                 }
 
                 if (isCustomFirstTime) {
@@ -172,6 +174,7 @@ open class ARFragment : ArFragment() {
                         Log.d("FIRST_LAUNCH", "in second 1")
                     } else {
                         file.mkdir()
+                        //file.createNewFile()
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 2")
                     }
@@ -242,6 +245,14 @@ open class ARFragment : ArFragment() {
 
         val nonFullTrackingImages = updatedAugmentedImages.filter { it.trackingMethod != AugmentedImage.TrackingMethod.FULL_TRACKING }
 
+        val pausedImages = updatedAugmentedImages.filter { it.trackingState == TrackingState.PAUSED }
+
+        if(pausedImages.isNotEmpty()) {
+            val act = activity as MainActivity
+            act.showMovePhoneAnimation()
+        }
+
+
         activeAugmentedImage?.let { activeAugmentedImage ->
             if (isArVideoPlaying() && nonFullTrackingImages.any { it.index == activeAugmentedImage.index }) {
                 pauseArVideo()
@@ -250,6 +261,8 @@ open class ARFragment : ArFragment() {
 
         val fullTrackingImages = updatedAugmentedImages.filter { it.trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING }
         if (fullTrackingImages.isEmpty()) return
+
+
 
         activeAugmentedImage?.let { activeAugmentedImage ->
             if (fullTrackingImages.any { it.index == activeAugmentedImage.index }) {
@@ -302,6 +315,9 @@ open class ARFragment : ArFragment() {
 
     private fun playbackArVideo(augmentedImage: AugmentedImage) {
 
+        var act = activity as MainActivity
+        act.stopMovePhoneAnimation()
+
         if (WHAT_DB_USE != "custom") {
             val videoName = "videos/"+augmentedImage.name.substringBeforeLast('.') + ".mp4"
             requireContext().assets.openFd(videoName)
@@ -317,11 +333,15 @@ open class ARFragment : ArFragment() {
             val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
             mediaPlayer.reset()
 
-            var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            //var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+
+            var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), videoName)
+
             if(!file.exists()){
-                SnackbarHelper.getInstance().showMessage(activity, "Could not find video file! Try to re-create augmented image")
+                Toast.makeText(activity, "Could not find video file! Try to re-create augmented image", Toast.LENGTH_LONG).show()
             } else {
-                mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+                Log.d("ui", ""+ context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
+                mediaPlayer.setDataSource(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
                 mediaPlayer.isLooping = true
                 mediaPlayer.prepare()
                 mediaPlayer.start()
@@ -362,8 +382,7 @@ open class ARFragment : ArFragment() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.e(TAG, "Sceneform requires Android N or later")
 
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Sceneform requires Android N or later")
+          Toast.makeText(activity, "Sceneform requires Android N or later", Toast.LENGTH_LONG).show()
         }
 
         val openGlVersionString = (context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
@@ -371,8 +390,7 @@ open class ARFragment : ArFragment() {
                 .glEsVersion
         if (java.lang.Double.parseDouble(openGlVersionString) < MIN_OPENGL_VERSION) {
             Log.e(TAG, "Sceneform requires OpenGL ES 3.0 or later")
-            SnackbarHelper.getInstance()
-                    .showError(activity, "Sceneform requires OpenGL ES 3.0 or later")
+            Toast.makeText(activity, "Sceneform requires OpenGL ES 3.0 or later", Toast.LENGTH_LONG).show()
         }
     }
 
