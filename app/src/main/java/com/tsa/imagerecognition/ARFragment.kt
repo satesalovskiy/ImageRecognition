@@ -157,7 +157,7 @@ open class ARFragment : ArFragment() {
                 try {
                     FileInputStream(file)
                 } catch (ex: FileNotFoundException){
-                    if(!isFirstLaunch)
+                    if(!isCustomFirstTime)
                         Toast.makeText(activity,"Unable to get access to storage. Check storage permissions", Toast.LENGTH_LONG).show()
                 }
 

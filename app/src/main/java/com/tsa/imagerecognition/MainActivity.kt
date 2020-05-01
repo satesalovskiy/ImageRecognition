@@ -339,7 +339,7 @@ class MainActivity : AppCompatActivity() {
     private fun showSwitchDialog() {
         val listItems = arrayOf("Custom", "Default")
         val mBuilder = AlertDialog.Builder(this@MainActivity)
-        mBuilder.setTitle("Choose an item")
+        mBuilder.setTitle("Choose an database")
 
         var checkedItem = 1
         if(checkedPosition == "default"){
