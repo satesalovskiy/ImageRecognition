@@ -22,6 +22,10 @@ import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import org.apache.commons.io.FileUtils.openInputStream
+
+
+
 
 /**
  * A simple [Fragment] subclass.
@@ -31,6 +35,7 @@ class AddNewImagesFragment : Fragment() {
     private lateinit var pickedImage: Bitmap
     private lateinit var pickedVideoPath: String
     private lateinit var mDatabaseHelper: DatabaseHelper
+    private lateinit var urii: Uri
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -77,7 +82,10 @@ class AddNewImagesFragment : Fragment() {
 //        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
 //        startActivityForResult(galleryIntent, 222)
 
-        val videoPickerIntent = Intent(Intent.ACTION_PICK)
+       // val videoPickerIntent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+
+        val videoPickerIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+
         videoPickerIntent.type = "video/*"
         startActivityForResult(videoPickerIntent, 222)
     }
@@ -119,10 +127,16 @@ class AddNewImagesFragment : Fragment() {
                             .into(edit_video)
 
                     val selectedVideo = data.data
-                    val selectedVideoPath = getPath(selectedVideo!!)
-                    pickedVideoPath = selectedVideoPath
+//
+                    val selectedVideoPath = selectedVideo?.path
+                    pickedVideoPath = selectedVideoPath!!
+
+                    urii = data.data!!
+
+                    //saveVideoToInternalStorage("pipu", data.data!!)
+
                     Log.d("path ",selectedVideoPath)
-                    Toast.makeText(activity, "video picked", Toast.LENGTH_LONG).show()
+//                    Toast.makeText(activity, "video picked", Toast.LENGTH_LONG).show()
                     //saveVideoToInternalStorage(selectedVideoPath)
                 }
             }
@@ -155,7 +169,7 @@ class AddNewImagesFragment : Fragment() {
     private fun saveEverythingInStorage(name: String, description: String) {
         addDataToSQL(name, description)
         saveImageToDB(name)
-        saveVideoToInternalStorage(name)
+        saveVideoToInternalStorage(name, urii)
     }
 
     private fun addDataToSQL(name: String, description: String) {
@@ -168,28 +182,28 @@ class AddNewImagesFragment : Fragment() {
         }
     }
 
-    private fun saveVideoToInternalStorage (name: String) {
-        val selectedVideoFile : File = File(pickedVideoPath)  // 2
-        val selectedVideoFileExtension : String = selectedVideoFile.extension  // 3
-        val internalStorageVideoFileName : String = name +"."+ selectedVideoFileExtension
+    private fun saveVideoToInternalStorage (name: String, uri: Uri) {
+        val internalStorageVideoFileName : String = name +"."+ "mp4"
 
        // var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
 
         var resultFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), internalStorageVideoFileName)
 
-        var kek = Uri.fromFile(selectedVideoFile)
-
         Log.d("lkl", resultFile.path.toString())
 
         val outputLL = FileOutputStream(resultFile)
 
-        val resolver = context?.contentResolver
+//        val resolver = context?.contentResolver
+//
+//        resolver?.openInputStream(Uri.fromFile(selectedVideoFile)).use { stream ->
+//            IOUtils.copy(stream, outputLL)
+//        }
+//
+//        outputLL.close()
 
-        resolver?.openInputStream(Uri.fromFile(selectedVideoFile)).use { stream ->
-            IOUtils.copy(stream, outputLL)
-        }
 
-        outputLL.close()
+        val inputStream = context?.contentResolver?.openInputStream(uri)
+        IOUtils.copy(inputStream, outputLL)
 
 
 //        val parcelFileDescriptor = context?.contentResolver?.openFileDescriptor(Uri.fromFile(selectedVideoFile), "r", null)

@@ -173,7 +173,7 @@ open class ARFragment : ArFragment() {
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 1")
                     } else {
-                        file.mkdirs()
+                        file.mkdir()
                         //file.createNewFile()
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 2")
