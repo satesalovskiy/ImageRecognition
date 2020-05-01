@@ -18,7 +18,9 @@ import com.squareup.picasso.Picasso
 import common.helpers.DatabaseHelper
 import kotlinx.android.synthetic.main.fragment_add_new_images.*
 import kotlinx.android.synthetic.main.fragment_add_new_images.view.*
+import org.apache.commons.io.IOUtils
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 
 /**
@@ -170,15 +172,46 @@ class AddNewImagesFragment : Fragment() {
         val selectedVideoFile : File = File(pickedVideoPath)  // 2
         val selectedVideoFileExtension : String = selectedVideoFile.extension  // 3
         val internalStorageVideoFileName : String = name +"."+ selectedVideoFileExtension
-        var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
-        var fos = FileOutputStream(resultFile)
-        fos.write(selectedVideoFile.readBytes())
-        fos.close()
+
+       // var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
+
+        var resultFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), internalStorageVideoFileName)
+
+        var kek = Uri.fromFile(selectedVideoFile)
+
+        Log.d("lkl", resultFile.path.toString())
+
+        val outputLL = FileOutputStream(resultFile)
+
+        val resolver = context?.contentResolver
+
+        resolver?.openInputStream(Uri.fromFile(selectedVideoFile)).use { stream ->
+            IOUtils.copy(stream, outputLL)
+        }
+
+        outputLL.close()
+
+
+//        val parcelFileDescriptor = context?.contentResolver?.openFileDescriptor(Uri.fromFile(selectedVideoFile), "r", null)
+//
+//        parcelFileDescriptor?.let {
+//
+//            val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+//
+//            val file = File(context?.cacheDir, internalStorageVideoFileName)
+//
+//            val outputStream = FileOutputStream(file)
+//
+//            IOUtils.copy(inputStream, outputStream)
+//        }
+
+
+
         Log.d("File", "File saved")
 
-        var file = File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), internalStorageVideoFileName)
-        Log.d("File", "File reed" + file.path)
+        //var file = File(Environment.getExternalStorageDirectory().getAbsolutePath(), internalStorageVideoFileName)
+
+       // Log.d("File", "File reed" + file.path)
 
         // storeFileInInternalStorage(selectedVideoFile, internalStorageVideoFileName)
 

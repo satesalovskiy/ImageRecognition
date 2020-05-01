@@ -45,7 +45,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Add fragment"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="50dp"
+        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/image_view_fit_to_scan"

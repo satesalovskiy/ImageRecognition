@@ -99,7 +99,10 @@ open class ARFragment : ArFragment() {
 
     private fun serialazeDB() {
         //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
-        var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+
+        //var file = File(Environment.getExternalStorageDirectory(), "/custom.imgdb")
+
+        var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "custom.imgdb")
 
         val outputStr: FileOutputStream = FileOutputStream(file)
         augmentedImageDB.serialize(outputStr)
@@ -142,7 +145,10 @@ open class ARFragment : ArFragment() {
             if (WHAT_DB_USE == "custom") {
                 //val file: File = File( ""+ activity?.getExternalFilesDir(null) + "/custom.imgdb")
 
-                var file = File(Environment.getExternalStorageDirectory(), "custom.imgdb")
+               // var file = File(Environment.getExternalStorageDirectory(), "/custom.imgdb")
+
+                var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "custom.imgdb")
+
 
 
 
@@ -151,7 +157,8 @@ open class ARFragment : ArFragment() {
                 try {
                     FileInputStream(file)
                 } catch (ex: FileNotFoundException){
-                    Toast.makeText(activity,"Unable to get access to storage. Check storage permissions", Toast.LENGTH_LONG).show()
+                    if(!isFirstLaunch)
+                        Toast.makeText(activity,"Unable to get access to storage. Check storage permissions", Toast.LENGTH_LONG).show()
                 }
 
                 if (isCustomFirstTime) {
@@ -166,7 +173,8 @@ open class ARFragment : ArFragment() {
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 1")
                     } else {
-                        file.mkdir()
+                        file.mkdirs()
+                        //file.createNewFile()
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 2")
                     }
@@ -325,11 +333,15 @@ open class ARFragment : ArFragment() {
             val videoName = augmentedImage.name.substringBeforeLast('.') + ".mp4"
             mediaPlayer.reset()
 
-            var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+            //var file = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+
+            var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), videoName)
+
             if(!file.exists()){
                 Toast.makeText(activity, "Could not find video file! Try to re-create augmented image", Toast.LENGTH_LONG).show()
             } else {
-                mediaPlayer.setDataSource(Environment.getExternalStorageDirectory().absolutePath + File.separator + videoName)
+                Log.d("ui", ""+ context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
+                mediaPlayer.setDataSource(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
                 mediaPlayer.isLooping = true
                 mediaPlayer.prepare()
                 mediaPlayer.start()
