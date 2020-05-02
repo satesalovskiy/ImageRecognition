@@ -77,12 +77,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
+
         pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
-        if(!pref.contains(APP_PREFERENCES_SHOW_INTRO)) {
-            val intent = Intent(this, IntroActivity::class.java)
-            startActivity(intent)
-            //finish()
-        }
+//
+//        if(!pref.contains(APP_PREFERENCES_SHOW_INTRO)) {
+//            val intent = Intent(this, IntroActivity::class.java)
+//            startActivity(intent)
+//            //finish()
+//        }
 
         setContentView(R.layout.activity_main)
 

@@ -56,6 +56,7 @@ class IntroActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
 
         sharedPreferences = applicationContext.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
@@ -63,6 +64,7 @@ class IntroActivity : AppCompatActivity() {
         val wasIntro = sharedPreferences.getBoolean(APP_PREFERENCES_SHOW_INTRO, false)
         if(wasIntro) {
             goToMain()
+            finish()
         }
 
         setContentView(R.layout.activity_intro)
