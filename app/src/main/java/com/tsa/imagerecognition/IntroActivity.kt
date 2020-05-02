@@ -62,7 +62,7 @@ class IntroActivity : AppCompatActivity() {
 
         val wasIntro = sharedPreferences.getBoolean(APP_PREFERENCES_SHOW_INTRO, false)
         if(wasIntro) {
-            goToMain()
+            //goToMain()
         }
 
         setContentView(R.layout.activity_intro)
