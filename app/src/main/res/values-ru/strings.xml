@@ -40,6 +40,8 @@
     <string name="intro_activity_btn_skip">Пропустить</string>
     <string name="intro_activity_btn_start">Начать</string>
 
+    <string name="list_of_default_images_fragment_button_close">Закрыть</string>
+
 
 
 

@@ -7,16 +7,11 @@ import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import kotlinx.android.synthetic.main.layout_screen.view.*
 
-
 class IntroViewPagerAdapter (var mContext: Context, var mListScreen: List<ScreenItem>) : PagerAdapter() {
-
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
 
-
-
         val layoutScreen = LayoutInflater.from(mContext).inflate(R.layout.layout_screen, null)
-
         val imgSlide = layoutScreen.intro_img
         val title = layoutScreen.intro_title
         val description = layoutScreen.intro_description
@@ -28,8 +23,6 @@ class IntroViewPagerAdapter (var mContext: Context, var mListScreen: List<Screen
         container.addView(layoutScreen)
 
         return layoutScreen
-
-
     }
 
     override fun getCount(): Int {
@@ -43,6 +36,5 @@ class IntroViewPagerAdapter (var mContext: Context, var mListScreen: List<Screen
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
 
         container.removeView(`object` as View)
-
     }
 }
