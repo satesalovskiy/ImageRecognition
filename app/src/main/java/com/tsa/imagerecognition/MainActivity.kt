@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
     private val APP_PREFERENCES = "image_recognition_prefs"
     private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
     private val APP_PREFERENCES_WHAT_DB_USE = "what_db_use"
+    private val APP_PREFERENCES_SHOW_INTRO = "intro"
+
     private lateinit var pref: SharedPreferences
     private var isFirstLaunch: Boolean = true
 
@@ -74,6 +77,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
+        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+        if(!pref.contains(APP_PREFERENCES_SHOW_INTRO)) {
+            val intent = Intent(this, IntroActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         setContentView(R.layout.activity_main)
 
         initializeAnimations()
@@ -82,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         mDatabaseHelper = DatabaseHelper(this)
         enterDataToMap()
 
-        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
         if(pref.contains(APP_PREFERENCES_FIRST_LAUNCH)){
             isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
         }
@@ -100,6 +109,7 @@ class MainActivity : AppCompatActivity() {
 
             editor.apply()
         }
+
 
         arFragment = ARFragment()
         var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
