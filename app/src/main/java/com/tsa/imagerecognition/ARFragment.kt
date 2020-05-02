@@ -150,8 +150,6 @@ open class ARFragment : ArFragment() {
                 var file = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "custom.imgdb")
 
 
-
-
                 var inputStr: InputStream?
 
                 try {
@@ -167,19 +165,27 @@ open class ARFragment : ArFragment() {
                     val editor = pref!!.edit()
                     editor.putBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
                     editor.apply()
+
+
+
+
                     Log.d("FIRST_LAUNCH", "in first")
                 } else {
                     if (file.exists()) {
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 1")
                     } else {
-                        file.mkdir()
-                        //file.createNewFile()
+                        file.mkdirs()
+                       //file.createNewFile()
                         inputStr = FileInputStream(file)
                         Log.d("FIRST_LAUNCH", "in second 2")
                     }
                 }
                 augmentedImageDB = AugmentedImageDatabase.deserialize(session, inputStr)
+
+                if(isCustomFirstTime){
+                    serialazeDB()
+                }
 
                 Log.d("Jopka", augmentedImageDB.numImages.toString())
 

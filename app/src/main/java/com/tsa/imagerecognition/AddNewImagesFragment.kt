@@ -1,6 +1,5 @@
 package com.tsa.imagerecognition
 
-
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -20,34 +19,24 @@ import kotlinx.android.synthetic.main.fragment_add_new_images.*
 import kotlinx.android.synthetic.main.fragment_add_new_images.view.*
 import org.apache.commons.io.IOUtils
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import org.apache.commons.io.FileUtils.openInputStream
 
-
-
-
-/**
- * A simple [Fragment] subclass.
- */
 class AddNewImagesFragment : Fragment() {
 
     private lateinit var pickedImage: Bitmap
     private lateinit var pickedVideoPath: String
     private lateinit var mDatabaseHelper: DatabaseHelper
-    private lateinit var urii: Uri
-
+    private lateinit var videoUri: Uri
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        mDatabaseHelper = DatabaseHelper(activity)
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_new_images, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mDatabaseHelper = DatabaseHelper(activity)
 
         edit_image.setOnClickListener{
             chooseImage()
@@ -62,8 +51,10 @@ class AddNewImagesFragment : Fragment() {
             val description = view.edit_description.text.toString()
 
             if(name.isEmpty() || !this::pickedImage.isInitialized || !this::pickedVideoPath.isInitialized || description.isEmpty()){
-                Toast.makeText(activity, "You forgot to initialize something!", Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, R.string.add_new_image_fragment_forgot_initialize, Toast.LENGTH_LONG).show()
             } else {
+                view.edit_name.setText("")
+                view.edit_description.setText("")
                 saveEverythingInStorage(name, description)
             }
         }
@@ -72,20 +63,10 @@ class AddNewImagesFragment : Fragment() {
             var act = activity as MainActivity
             act.dropFragment(false)
         }
-
-
-
     }
 
     private fun chooseVideo() {
-
-//        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-//        startActivityForResult(galleryIntent, 222)
-
-       // val videoPickerIntent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-
         val videoPickerIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-
         videoPickerIntent.type = "video/*"
         startActivityForResult(videoPickerIntent, 222)
     }
@@ -95,7 +76,6 @@ class AddNewImagesFragment : Fragment() {
         photoPickerIntent.type = "image/*"
         startActivityForResult(photoPickerIntent, 111)
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -113,10 +93,10 @@ class AddNewImagesFragment : Fragment() {
                     val selectedImage = data.data
                     val bitmap = MediaStore.Images.Media.getBitmap(activity?.contentResolver, selectedImage)
                     pickedImage = bitmap
-                    Toast.makeText(activity, "Image picked", Toast.LENGTH_LONG).show()
-
+                    Toast.makeText(activity, R.string.add_new_image_fragment_image_picked, Toast.LENGTH_LONG).show()
                 }
             }
+
             222 -> {
                 if(resultCode == Activity.RESULT_OK && data != null){
 
@@ -127,120 +107,49 @@ class AddNewImagesFragment : Fragment() {
                             .into(edit_video)
 
                     val selectedVideo = data.data
-//
                     val selectedVideoPath = selectedVideo?.path
                     pickedVideoPath = selectedVideoPath!!
-
-                    urii = data.data!!
-
-                    //saveVideoToInternalStorage("pipu", data.data!!)
-
-                    Log.d("path ",selectedVideoPath)
-//                    Toast.makeText(activity, "video picked", Toast.LENGTH_LONG).show()
-                    //saveVideoToInternalStorage(selectedVideoPath)
+                    videoUri = data.data!!
+                    Toast.makeText(activity, R.string.add_new_image_fragment_video_picked, Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
-
-    private fun getPath(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Video.Media.DATA)
-
-        //Cursor cursor = getContentResolver().query(uri, projection, null, null, null)
-
-        val cursor = activity?.contentResolver?.query(uri,projection, null, null, null)
-
-        if (cursor != null) {
-            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-
-            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-            cursor.moveToFirst()
-            return cursor.getString(column_index)
-        } else {
-            Toast.makeText(activity, "Cursor is null", Toast.LENGTH_LONG).show()
-            return ""
-        }
-
-
-    }
-
     private fun saveEverythingInStorage(name: String, description: String) {
         addDataToSQL(name, description)
         saveImageToDB(name)
-        saveVideoToInternalStorage(name, urii)
+        saveVideoToExternalStorage(name, videoUri)
     }
 
     private fun addDataToSQL(name: String, description: String) {
-        var insertData = mDatabaseHelper.addData(name, description)
+        val insertData = mDatabaseHelper.addData(name, description)
 
         if(insertData){
-            Toast.makeText(activity, "Data added", Toast.LENGTH_LONG).show()
+            Toast.makeText(activity, R.string.add_new_image_fragment_data_added, Toast.LENGTH_LONG).show()
         } else {
-            Toast.makeText(activity, "Failed", Toast.LENGTH_LONG).show()
+            Toast.makeText(activity, R.string.add_new_image_fragment_data_failed, Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun saveVideoToInternalStorage (name: String, uri: Uri) {
-        val internalStorageVideoFileName : String = name +"."+ "mp4"
+    private fun saveVideoToExternalStorage (name: String, uri: Uri) {
 
-       // var resultFile = File(Environment.getExternalStorageDirectory(), internalStorageVideoFileName)
+        val resultFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), "$name.mp4")
 
-        var resultFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES), internalStorageVideoFileName)
-
-        Log.d("lkl", resultFile.path.toString())
+        Log.d("VideoSaving", resultFile.path.toString())
 
         val outputLL = FileOutputStream(resultFile)
 
-//        val resolver = context?.contentResolver
-//
-//        resolver?.openInputStream(Uri.fromFile(selectedVideoFile)).use { stream ->
-//            IOUtils.copy(stream, outputLL)
-//        }
-//
-//        outputLL.close()
-
-
         val inputStream = context?.contentResolver?.openInputStream(uri)
+
         IOUtils.copy(inputStream, outputLL)
 
-
-//        val parcelFileDescriptor = context?.contentResolver?.openFileDescriptor(Uri.fromFile(selectedVideoFile), "r", null)
-//
-//        parcelFileDescriptor?.let {
-//
-//            val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-//
-//            val file = File(context?.cacheDir, internalStorageVideoFileName)
-//
-//            val outputStream = FileOutputStream(file)
-//
-//            IOUtils.copy(inputStream, outputStream)
-//        }
-
-
-
-        Log.d("File", "File saved")
-
-        //var file = File(Environment.getExternalStorageDirectory().getAbsolutePath(), internalStorageVideoFileName)
-
-       // Log.d("File", "File reed" + file.path)
-
-        // storeFileInInternalStorage(selectedVideoFile, internalStorageVideoFileName)
-
-//        val file : File = application.getFileStreamPath("" + filesDir + "/" +internalStorageVideoFileName)
-
-        // var file = File( getFilesDir(), internalStorageVideoFileName)
-        //  Log.d("savein", file.path.toString())
-        //videovvv.setVideoPath(file.path.toString())
+        Log.d("VideoSaving", "File saved")
     }
 
     private fun saveImageToDB (name: String) {
 
-        var act = activity as MainActivity
+        val act = activity as MainActivity
         act.arFragment.addNewImage(pickedImage, name)
     }
-
-
 }

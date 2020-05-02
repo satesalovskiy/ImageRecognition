@@ -9,4 +9,19 @@
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
 
+
+    <string name="add_new_image_fragment_forgot_initialize">You forgot to initialize something!</string>
+    <string name="add_new_image_fragment_image_picked">Image picked</string>
+    <string name="add_new_image_fragment_video_picked">Video picked</string>
+    <string name="add_new_image_fragment_data_added">Data added</string>
+    <string name="add_new_image_fragment_data_failed">Failed to add data</string>
+    <string name="add_new_image_fragment_edit_name">Name</string>
+    <string name="add_new_image_fragment_edit_description">Description</string>
+    <string name="add_new_image_fragment_add_button">Add</string>
+    <string name="add_new_image_fragment_close_button">Close</string>
+
+
+
+
+
 </resources>

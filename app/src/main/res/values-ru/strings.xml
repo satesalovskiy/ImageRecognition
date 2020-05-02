@@ -9,4 +9,18 @@
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
 
+
+    <string name="add_new_image_fragment_forgot_initialize">Вы забыли указать один из параметров!</string>
+    <string name="add_new_image_fragment_image_picked">Картинка выбрана</string>
+    <string name="add_new_image_fragment_video_picked">Видео выбрано</string>
+    <string name="add_new_image_fragment_data_added">Сохранено</string>
+    <string name="add_new_image_fragment_data_failed">Не удалось сохранить данные</string>
+    <string name="add_new_image_fragment_edit_name">Название</string>
+    <string name="add_new_image_fragment_edit_description">Описание</string>
+    <string name="add_new_image_fragment_add_button">Добавить</string>
+    <string name="add_new_image_fragment_close_button">Закрыть</string>
+
+
+
+
 </resources>

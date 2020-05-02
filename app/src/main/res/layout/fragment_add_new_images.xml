@@ -1,92 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".AddNewImagesFragment"
+    android:layout_gravity="center"
     android:background="@drawable/recycler_view_shape"
-    android:layout_gravity="center">
+    android:orientation="vertical"
+    tools:context=".AddNewImagesFragment">
 
     <EditText
         android:id="@+id/edit_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name"
         android:layout_marginStart="10dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginTop="30dp"/>
+        android:hint="@string/add_new_image_fragment_edit_name"
+        android:inputType="textPersonName" />
 
     <EditText
         android:id="@+id/edit_description"
-        android:hint="Description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_marginTop="10dp"
-        />
+        android:layout_marginEnd="10dp"
+        android:hint="@string/add_new_image_fragment_edit_description"
+        android:inputType="text" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="start">
-
+        android:layout_gravity="start"
+        android:orientation="horizontal">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/edit_image"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/defaultimage2"
             android:layout_marginStart="10dp"
             android:layout_marginTop="30dp"
-            android:elevation="2dp"
             android:layout_marginBottom="5dp"
-            />
+            android:elevation="2dp"
+            android:src="@drawable/defaultimagesmall" />
+
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/edit_video"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/defaultvideo"
-            android:layout_marginTop="30dp"
             android:layout_marginStart="30dp"
-            android:elevation="2dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginTop="30dp"
             android:layout_marginEnd="5dp"
-            />
-
+            android:layout_marginBottom="5dp"
+            android:elevation="2dp"
+            android:src="@drawable/defaultvideo" />
     </LinearLayout>
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="end">
+        android:layout_gravity="end"
+        android:orientation="horizontal">
 
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/closeAdding"
-            android:text = "Close"
-            android:background="@drawable/button_shape"
-            android:layout_marginEnd="30dp"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="30dp"/>
-
-        <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/applyAdding"
-            android:text = "Add"
-            android:background="@drawable/important_button_shape"
-            android:layout_marginEnd="10dp"
             android:layout_marginTop="25dp"
-            android:layout_marginBottom="30dp"/>
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/button_shape"
+            android:elevation="2dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="@string/add_new_image_fragment_close_button"
+            android:textColor="#242424" />
 
-
+        <Button
+            android:id="@+id/applyAdding"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/important_button_shape"
+            android:elevation="2dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="@string/add_new_image_fragment_add_button"
+            android:textColor="#242424" />
     </LinearLayout>
-
 </LinearLayout>
