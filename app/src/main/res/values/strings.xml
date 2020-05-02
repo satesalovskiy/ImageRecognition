@@ -20,8 +20,12 @@
     <string name="add_new_image_fragment_add_button">Add</string>
     <string name="add_new_image_fragment_close_button">Close</string>
 
-
-
-
+    <string name="ar_fragment_image_quality">Insufficient image quality, choose another image</string>
+    <string name="ar_fragment_image_added">Image added</string>
+    <string name="ar_fragment_error_setup_database">Could not setup augmented image database</string>
+    <string name="ar_fragment_error_access_to_storage">Unable to get access to storage. Check storage permissions in settings</string>
+    <string name="ar_fragment_error_find_video">Could not find video file! Try to re-create augmented image</string>
+    <string name="ar_fragment_sceneform_requires_android">Sceneform requires Android N or later</string>
+    <string name="ar_fragment_sceneform_requires_opengl">Sceneform requires OpenGL ES 3.0 or later</string>
 
 </resources>

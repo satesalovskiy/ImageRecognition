@@ -20,6 +20,17 @@
     <string name="add_new_image_fragment_add_button">Добавить</string>
     <string name="add_new_image_fragment_close_button">Закрыть</string>
 
+    <string name="ar_fragment_image_quality">Неудовлетворительное качество картинки, попробуйте другую</string>
+    <string name="ar_fragment_image_added">Картинка добавлена</string>
+    <string name="ar_fragment_error_setup_database">Не получилось загрузить базу картинок дополненной реальности</string>
+    <string name="ar_fragment_error_access_to_storage">Не удалось получить доступ к хранилищу. Проверьте разрешения в настройках</string>
+    <string name="ar_fragment_error_find_video">Не получилось найти видео файл! Попробуйте пересоздать картинку</string>
+    <string name="ar_fragment_sceneform_requires_android">Для работы Sceneform требуется Android N или выше</string>
+    <string name="ar_fragment_sceneform_requires_opengl">Для работы Sceneform требуется OpenGL ES 3.0 или выше</string>
+
+
+
+
 
 
 
