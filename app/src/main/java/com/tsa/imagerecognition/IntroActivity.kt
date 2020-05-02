@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -20,6 +21,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
+import android.widget.Button
+import android.widget.TableLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +30,7 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.viewpager.widget.ViewPager
+import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import common.helpers.DatabaseHelper
 import kotlinx.android.synthetic.main.activity_intro.*
@@ -36,17 +40,47 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class IntroActivity : AppCompatActivity() {
+    private val APP_PREFERENCES = "image_recognition_prefs"
+    private val APP_PREFERENCES_SHOW_INTRO = "intro"
 
 
     private lateinit var screenPager: ViewPager
     var introViewPagerAdapter: IntroViewPagerAdapter? = null
+    private lateinit var tabIndicator: TabLayout
+    private lateinit var buttonNext: Button
+    private lateinit var buttonStart: Button
+    private var position = 0
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
+
+        sharedPreferences = applicationContext.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
+
+        val wasIntro = sharedPreferences.getBoolean(APP_PREFERENCES_SHOW_INTRO, false)
+        if(wasIntro) {
+            goToMain()
+            finish()
+        }
+
         setContentView(R.layout.activity_intro)
+
+        supportActionBar?.hide()
+
+
+        buttonNext = btn_next
+        buttonStart = btn_get_started
+        tabIndicator = tab_indicator
+
+        var skip = skip
+        skip.setOnClickListener{
+            saveIntroWasShown(true)
+            goToMain()
+        }
 
 
         val mList = ArrayList<ScreenItem>()
@@ -69,5 +103,67 @@ class IntroActivity : AppCompatActivity() {
         introViewPagerAdapter = IntroViewPagerAdapter(this, mList)
         screenPager.adapter = introViewPagerAdapter
 
+
+
+        tabIndicator.setupWithViewPager(screenPager)
+
+        buttonNext.setOnClickListener{
+
+            position = screenPager.currentItem
+
+            if(position < mList.size-1 ){
+                position++
+                screenPager.currentItem = position
+            }
+
+            if(position == mList.size) {
+                showLastScreen()
+            }
+
+        }
+
+        buttonStart.setOnClickListener{
+            goToMain()
+            saveIntroWasShown(true)
+        }
+
+        tabIndicator.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
+            override fun onTabSelected(p0: TabLayout.Tab?) {
+                if(p0?.position == mList.size-1) {
+                    showLastScreen()
+                }
+            }
+
+            override fun onTabUnselected(p0: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(p0: TabLayout.Tab?) {
+            }
+        })
+    }
+
+
+    private fun saveIntroWasShown(shown: Boolean) {
+
+        var editor = sharedPreferences.edit()
+        editor.putBoolean(APP_PREFERENCES_SHOW_INTRO, true)
+        editor.apply()
+
+
+
+    }
+
+    private fun goToMain(){
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+
+
+    private fun showLastScreen() {
+        buttonNext.visibility = View.GONE
+        tabIndicator.visibility = View.GONE
+        buttonStart.visibility = View.VISIBLE
     }
 }
