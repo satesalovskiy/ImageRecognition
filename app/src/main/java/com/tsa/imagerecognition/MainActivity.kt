@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         if(!pref.contains(APP_PREFERENCES_SHOW_INTRO)) {
             val intent = Intent(this, IntroActivity::class.java)
             startActivity(intent)
-            finish()
+            //finish()
         }
 
         setContentView(R.layout.activity_main)
