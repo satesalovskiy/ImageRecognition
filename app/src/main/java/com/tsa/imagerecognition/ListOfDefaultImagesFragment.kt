@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_list_of_default_images.*
 import kotlinx.android.synthetic.main.fragment_list_of_default_images.view.*
-import kotlinx.android.synthetic.main.list_defualt_item.view.*
+import kotlinx.android.synthetic.main.list_default_item.view.*
 
 /**
  * A simple [Fragment] subclass.

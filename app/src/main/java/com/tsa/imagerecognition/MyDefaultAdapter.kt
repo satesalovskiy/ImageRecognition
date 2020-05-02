@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.list_defualt_item.view.*
+import kotlinx.android.synthetic.main.list_default_item.view.*
 
 class MyDefaultAdapter(val items : ArrayList<Bitmap>, val context: Context) : RecyclerView.Adapter<MyDefaultAdapter.ViewHoled>() {
 
@@ -20,7 +20,7 @@ class MyDefaultAdapter(val items : ArrayList<Bitmap>, val context: Context) : Re
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHoled {
-        return ViewHoled(LayoutInflater.from(context).inflate(R.layout.list_defualt_item, parent, false))
+        return ViewHoled(LayoutInflater.from(context).inflate(R.layout.list_default_item, parent, false))
     }
 
 
