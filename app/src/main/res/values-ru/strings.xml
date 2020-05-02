@@ -28,8 +28,17 @@
     <string name="ar_fragment_sceneform_requires_android">Для работы Sceneform требуется Android N или выше</string>
     <string name="ar_fragment_sceneform_requires_opengl">Для работы Sceneform требуется OpenGL ES 3.0 или выше</string>
 
-
-
+    <string name="intro_activity_scan_image">Сканируйте изображение</string>
+    <string name="intro_activity_scan_image_description">Наведите смартфон на изображение, которое хотите распознать. Если картинка распознана, то появится иконка, которая показывает, что нужно немного повернуть смартфон</string>
+    <string name="intro_activity_video_placing">Размещение видео</string>
+    <string name="intro_activity_video_placing_description">Дождитесь появления видео поверх картинки</string>
+    <string name="intro_activity_description">Описание</string>
+    <string name="intro_activity_description_description">Вы можете найти дополнительную информацию о видео в нижней части экрана</string>
+    <string name="intro_activity_additional_options">Дополнительные возможности</string>
+    <string name="intro_activity_additional_options_description">Вы можете получить доступ к нескольким интересным возможностям, нажав на иконку меню в правом верхнем углу</string>
+    <string name="intro_activity_btn_next">Дальше</string>
+    <string name="intro_activity_btn_skip">Пропустить</string>
+    <string name="intro_activity_btn_start">Начать</string>
 
 
 

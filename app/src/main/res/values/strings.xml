@@ -28,4 +28,18 @@
     <string name="ar_fragment_sceneform_requires_android">Sceneform requires Android N or later</string>
     <string name="ar_fragment_sceneform_requires_opengl">Sceneform requires OpenGL ES 3.0 or later</string>
 
+    <string name="intro_activity_scan_image">Scan Image</string>
+    <string name="intro_activity_scan_image_description">Point your smartphone at the picture you want to recognize. If the picture is recognized, an icon will appear that indicates that you may have to turn the smartphone a little</string>
+    <string name="intro_activity_video_placing">Video placing</string>
+    <string name="intro_activity_video_placing_description">Wait for the video to be placed on top of the picture</string>
+    <string name="intro_activity_description">Description</string>
+    <string name="intro_activity_description_description">You could find additional information about the video at the bottom of screen</string>
+    <string name="intro_activity_additional_options">Additional options</string>
+    <string name="intro_activity_additional_options_description">You could access several interesting functions by clicking on the menu icon in the upper right corner</string>
+    <string name="intro_activity_btn_next">Next</string>
+    <string name="intro_activity_btn_skip">Skip</string>
+    <string name="intro_activity_btn_start">Start</string>
+
+
+
 </resources>
