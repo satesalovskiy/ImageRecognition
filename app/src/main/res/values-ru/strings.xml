@@ -1,12 +1,66 @@
 <resources>
-    <string name="app_name">Logo scan with AR</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="register">Register</string>
-    <string name="btn_link_to_login">Already have an account? Login!</string>
-
+    <string name="app_name">Logo AR</string>
 
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
+
+
+    <string name="add_new_image_fragment_forgot_initialize">Вы забыли указать один из параметров!</string>
+    <string name="add_new_image_fragment_image_picked">Картинка выбрана</string>
+    <string name="add_new_image_fragment_video_picked">Видео выбрано</string>
+    <string name="add_new_image_fragment_data_added">Сохранено</string>
+    <string name="add_new_image_fragment_data_failed">Не удалось сохранить данные</string>
+    <string name="add_new_image_fragment_edit_name">Название</string>
+    <string name="add_new_image_fragment_edit_description">Описание</string>
+    <string name="add_new_image_fragment_add_button">Добавить</string>
+    <string name="add_new_image_fragment_close_button">Закрыть</string>
+
+    <string name="ar_fragment_image_quality">Неудовлетворительное качество картинки, попробуйте другую</string>
+    <string name="ar_fragment_image_added">Картинка добавлена</string>
+    <string name="ar_fragment_error_setup_database">Не получилось загрузить базу картинок дополненной реальности</string>
+    <string name="ar_fragment_error_access_to_storage">Не удалось получить доступ к хранилищу. Проверьте разрешения в настройках</string>
+    <string name="ar_fragment_error_find_video">Не получилось найти видео файл! Попробуйте пересоздать картинку</string>
+    <string name="ar_fragment_sceneform_requires_android">Для работы Sceneform требуется Android N или выше</string>
+    <string name="ar_fragment_sceneform_requires_opengl">Для работы Sceneform требуется OpenGL ES 3.0 или выше</string>
+
+    <string name="intro_activity_scan_image">Сканируйте изображения</string>
+    <string name="intro_activity_scan_image_description">Наведите смартфон на изображение, которое хотите распознать. Если картинка распознана, то появится иконка, которая показывает, что нужно немного повернуть смартфон</string>
+    <string name="intro_activity_video_placing">Размещение видео</string>
+    <string name="intro_activity_video_placing_description">Дождитесь появления видео поверх картинки</string>
+    <string name="intro_activity_description">Описание</string>
+    <string name="intro_activity_description_description">Вы можете найти дополнительную информацию о видео в нижней части экрана</string>
+    <string name="intro_activity_additional_options">Дополнительные возможности</string>
+    <string name="intro_activity_additional_options_description">Вы можете получить доступ к нескольким интересным возможностям, нажав на иконку меню в правом верхнем углу</string>
+    <string name="intro_activity_btn_next">Далее</string>
+    <string name="intro_activity_btn_skip">Пропустить</string>
+    <string name="intro_activity_btn_start">Начать</string>
+
+    <string name="list_of_default_images_fragment_button_close">Закрыть</string>
+
+    <string name="main_activity_add_dialog_title">Сменить базу данных?</string>
+    <string name="main_activity_add_dialog_message">Вы не можете добавить новую картинку в базу данных по умолчанию. Хотели бы вы изменить текущую базу данных?</string>
+    <string name="main_activity_add_dialog_positive">Изменить</string>
+    <string name="main_activity_add_dialog_negative">Нет</string>
+    <string name="main_activity_information_about">Информация о</string>
+    <string name="main_activity_no_description">Описание отсутствует</string>
+    <string name="main_activity_description_for">Описание для картинки</string>
+
+    <string name="main_activity_dialog_custom">Персональная</string>
+    <string name="main_activity_dialog_default">По умолчанию</string>
+    <string name="main_activity_dialog_title">Выберите базу данных</string>
+    <string name="main_activity_dialog_button_cancel">Отменить</string>
+    <string name="main_activity_dialog_toast_restart">Изменения приняты. Требуется перезапуск</string>
+
+    <string name="main_activity_no_camera_perm">Вы не можете использовать приложения без разрешения на использование Камеры</string>
+    <string name="main_activity_no_storage_perm">Вы не можете использовать персональную базу данных без разрешения на доступ к Файлам</string>
+    <string name="main_activity_layout_no_description">Описание отсутствует</string>
+
+    <string name="bottom_sheet_peek">Верхушка нижней панели</string>
+    <string name="bottom_sheet_content">Содержание нижней панели</string>
+
+
+
+
+
 
 </resources>

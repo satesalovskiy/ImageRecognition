@@ -2,9 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tsa.imagerecognition">
 
-    <uses-feature
-        android:glEsVersion="0x00030000"
-        android:required="true" />
+
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -12,6 +10,9 @@
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
 
+    <uses-feature
+        android:glEsVersion="0x00030000"
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="true" />
@@ -25,7 +26,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".IntroActivity"
-            android:theme="@style/AppTheme.Launcher">
+            android:theme="@style/AppTheme.Launcher"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,8 +36,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.Launcher">
-
+            android:theme="@style/AppTheme.Launcher"
+            android:screenOrientation="portrait" >
         </activity>
 
         <meta-data

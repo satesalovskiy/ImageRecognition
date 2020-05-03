@@ -1,12 +1,58 @@
 <resources>
-    <string name="app_name">Logo scan with AR</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="register">Register</string>
-    <string name="btn_link_to_login">Already have an account? Login!</string>
-
+    <string name="app_name">Logo AR</string>
 
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
+
+    <string name="add_new_image_fragment_forgot_initialize">You forgot to initialize something!</string>
+    <string name="add_new_image_fragment_image_picked">Image picked</string>
+    <string name="add_new_image_fragment_video_picked">Video picked</string>
+    <string name="add_new_image_fragment_data_added">Data added</string>
+    <string name="add_new_image_fragment_data_failed">Failed to add data</string>
+    <string name="add_new_image_fragment_edit_name">Name</string>
+    <string name="add_new_image_fragment_edit_description">Description</string>
+    <string name="add_new_image_fragment_add_button">Add</string>
+    <string name="add_new_image_fragment_close_button">Close</string>
+
+    <string name="ar_fragment_image_quality">Insufficient image quality, choose another image</string>
+    <string name="ar_fragment_image_added">Image added</string>
+    <string name="ar_fragment_error_setup_database">Could not setup augmented image database</string>
+    <string name="ar_fragment_error_access_to_storage">Unable to get access to storage. Check storage permissions in settings</string>
+    <string name="ar_fragment_error_find_video">Could not find video file! Try to re-create augmented image</string>
+    <string name="ar_fragment_sceneform_requires_android">Sceneform requires Android N or later</string>
+    <string name="ar_fragment_sceneform_requires_opengl">Sceneform requires OpenGL ES 3.0 or later</string>
+
+    <string name="intro_activity_scan_image">Scan Images</string>
+    <string name="intro_activity_scan_image_description">Point your smartphone at the picture you want to recognize. If the picture is recognized, an icon will appear that indicates that you may have to turn the smartphone a little</string>
+    <string name="intro_activity_video_placing">Video placing</string>
+    <string name="intro_activity_video_placing_description">Wait for the video to be placed on top of the picture</string>
+    <string name="intro_activity_description">Description</string>
+    <string name="intro_activity_description_description">You could find additional information about the video at the bottom of screen</string>
+    <string name="intro_activity_additional_options">Additional options</string>
+    <string name="intro_activity_additional_options_description">You could access several interesting functions by clicking on the menu icon in the upper right corner</string>
+    <string name="intro_activity_btn_next">Next</string>
+    <string name="intro_activity_btn_skip">Skip</string>
+    <string name="intro_activity_btn_start">Start</string>
+
+    <string name="list_of_default_images_fragment_button_close">Close</string>
+
+    <string name="main_activity_add_dialog_title">Change database?</string>
+    <string name="main_activity_add_dialog_message">You can not add new augmented image into Default database. Would you like to change active database?</string>
+    <string name="main_activity_add_dialog_positive">Change</string>
+    <string name="main_activity_add_dialog_negative">No</string>
+    <string name="main_activity_information_about">Information about</string>
+    <string name="main_activity_no_description">No description</string>
+    <string name="main_activity_description_for">Description for image</string>
+    <string name="main_activity_dialog_custom">Custom</string>
+    <string name="main_activity_dialog_default">Default</string>
+    <string name="main_activity_dialog_title">Select database</string>
+    <string name="main_activity_dialog_button_cancel">Cancel</string>
+    <string name="main_activity_dialog_toast_restart">Changes accepted. Restart required</string>
+    <string name="main_activity_no_camera_perm">You can not use app without CAMERA permission</string>
+    <string name="main_activity_no_storage_perm">You can not use custom image database without STORAGE permission</string>
+    <string name="main_activity_layout_no_description">No description</string>
+
+    <string name="bottom_sheet_peek">Bottom_sheet_peek</string>
+    <string name="bottom_sheet_content">Bottom_sheet_content</string>
 
 </resources>
