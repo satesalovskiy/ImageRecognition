@@ -59,10 +59,10 @@ class ARFragment : ArFragment() {
             WHAT_DB_USE = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
             Log.d("FirstLaunch", "We will use $WHAT_DB_USE")
         }
-        if (pref!!.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
+        if (pref.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
             isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
         }
-        if (pref!!.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
+        if (pref.contains(APP_PREFERENCES_CUSTOM_FIRST_TIME)) {
             isCustomFirstTime = pref.getBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
         }
     }

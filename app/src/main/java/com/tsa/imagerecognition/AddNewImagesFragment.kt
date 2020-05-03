@@ -60,7 +60,7 @@ class AddNewImagesFragment : Fragment() {
         }
 
         closeAdding.setOnClickListener{
-            var act = activity as MainActivity
+            val act = activity as MainActivity
             act.dropFragment(false)
         }
     }

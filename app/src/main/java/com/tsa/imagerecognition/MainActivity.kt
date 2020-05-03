@@ -1,4 +1,3 @@
-
 package com.tsa.imagerecognition
 
 import android.animation.Animator
@@ -6,20 +5,16 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Html
-import android.text.SpannableString
-import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -37,128 +32,71 @@ import java.io.InputStream
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-
 class MainActivity : AppCompatActivity() {
 
-
-    private lateinit var auth: FirebaseAuth
     private val APP_PREFERENCES = "image_recognition_prefs"
     private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
     private val APP_PREFERENCES_WHAT_DB_USE = "what_db_use"
-    private val APP_PREFERENCES_SHOW_INTRO = "intro"
 
     private lateinit var pref: SharedPreferences
-    private var isFirstLaunch: Boolean = true
-
-    private var checkedPosition: String? = "default"
-
-
-
-    private lateinit var listFrag: ListOfDefaultImagesFragment
-
-    private lateinit var mDatabaseHelper: DatabaseHelper
-
-
-
-    public lateinit var arFragment: ARFragment
-
-    lateinit var addImageFragment: AddNewImagesFragment
-
-
-
-    val listImages: ArrayList<Bitmap> = ArrayList()
-
     private lateinit var animation1: ObjectAnimator
     private lateinit var animation2: ObjectAnimator
     private lateinit var animation3: ObjectAnimator
     private lateinit var animation4: ObjectAnimator
+    private lateinit var listFrag: ListOfDefaultImagesFragment
+    private lateinit var mDatabaseHelper: DatabaseHelper
+    lateinit var arFragment: ARFragment
+    private lateinit var addImageFragment: AddNewImagesFragment
 
+    private val set = AnimatorSet()
+
+    private var isFirstLaunch: Boolean = true
+
+    private var checkedPosition: String? = "default"
+
+    val listImages: ArrayList<Bitmap> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
-
-        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
-//
-//        if(!pref.contains(APP_PREFERENCES_SHOW_INTRO)) {
-//            val intent = Intent(this, IntroActivity::class.java)
-//            startActivity(intent)
-//            //finish()
-//        }
-
         setContentView(R.layout.activity_main)
 
-        initializeAnimations()
+        checkPermissions()
 
+        toolbar.title = ""
+        setSupportActionBar(toolbar)
+
+        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+
+        initializeAnimations()
 
         mDatabaseHelper = DatabaseHelper(this)
         enterDataToMap()
 
-        if(pref.contains(APP_PREFERENCES_FIRST_LAUNCH)){
+        if (pref.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
             isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
         }
-        if(pref.contains(APP_PREFERENCES_WHAT_DB_USE)){
-            checkedPosition = pref.getString(APP_PREFERENCES_WHAT_DB_USE,"")
+        if (pref.contains(APP_PREFERENCES_WHAT_DB_USE)) {
+            checkedPosition = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
         }
-        if (isFirstLaunch){
+        if (isFirstLaunch) {
 
-            Log.d("FIRST_LAUNCH", "Real first launch")
+            Log.d("FirstLaunch", "Real first launch")
+
             val editor = pref.edit()
-
             editor.putBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
-
             editor.putString(APP_PREFERENCES_WHAT_DB_USE, "default")
-
             editor.apply()
         }
 
-
         arFragment = ARFragment()
-        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
-        frt.add(R.id.frgmCont, arFragment)
-        frt.commit()
-
-
-        toolbar.title = ""
-        setSupportActionBar(toolbar)
-       // supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-       // supportFragmentManager.findFragmentById(R.id.ux_fragment)
-        //auth = FirebaseAuth.getInstance()
-        //Toast.makeText(this, auth.uid, Toast.LENGTH_LONG).show()
-
-
-
-        checkPermissions()
-
-
-//        kek.setOnClickListener{
-//            setupFragment()
-//
-//
-//           // Picasso.get().load("https://vk.com/im?peers=c257&sel=44403965&z=photo44403965_457242635%2Fmail1170545").into(image_view_fit_to_scan)
-//
-//
-//        }
-
-//
-//        closeFragment.setOnClickListener{
-//            dropFragment()
-//        }
-
-
-
         listFrag = ListOfDefaultImagesFragment()
         addImageFragment = AddNewImagesFragment()
 
-       // showMovePhoneAnimation()
-
-        kek.setOnClickListener{
-            stopMovePhoneAnimation()
-        }
-
+        val frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        frt.add(R.id.frgmCont, arFragment)
+        frt.commit()
     }
-
 
     private fun initializeAnimations() {
         animation1 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 100F)
@@ -167,9 +105,8 @@ class MainActivity : AppCompatActivity() {
         animation4 = ObjectAnimator.ofFloat(image_view_fit_to_scan, "translationX", 0F)
     }
 
-
-    val set = AnimatorSet()
     fun showMovePhoneAnimation() {
+
         image_view_fit_to_scan.visibility = View.VISIBLE
 
         set.playSequentially(animation1, animation3, animation2, animation4)
@@ -180,10 +117,6 @@ class MainActivity : AppCompatActivity() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)
                 set.start()
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-                super.onAnimationCancel(animation)
             }
         })
         set.start()
@@ -198,23 +131,19 @@ class MainActivity : AppCompatActivity() {
         image_view_fit_to_scan.visibility = View.GONE
     }
 
-
-
     private fun setupFragment(fragment: Fragment) {
-        if(fragment is ListOfDefaultImagesFragment) getImage(this)
+        if (fragment is ListOfDefaultImagesFragment) getImage(this)
 
-        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        val frt: FragmentTransaction = supportFragmentManager.beginTransaction()
         frt.replace(R.id.frgmCont2, fragment)
         frt.commit()
-        Log.d("jij", "Fragment commiteed")
-
     }
 
-    public fun dropFragment(listFragment: Boolean) {
+    fun dropFragment(listFragment: Boolean) {
 
-        var frt: FragmentTransaction = supportFragmentManager.beginTransaction()
+        val frt: FragmentTransaction = supportFragmentManager.beginTransaction()
 
-        if(listFragment){
+        if (listFragment) {
             frt.remove(listFrag)
         } else {
             frt.remove(addImageFragment)
@@ -225,18 +154,15 @@ class MainActivity : AppCompatActivity() {
     private fun getImage(context: Context) {
         var `is`: InputStream
 
-        var files = context.assets.list("imagess")
+        val files = context.assets.list("imagess")
 
-        Log.d("jij", "list" + files?.size.toString())
-
-        for(i in files!!.indices)
-        {
+        for (i in files!!.indices) {
             `is` = context.assets.open("imagess/" + files[i])
             val bitmap = BitmapFactory.decodeStream(`is`)
             listImages.add(i, bitmap)
         }
 
-        Log.d("jij", "Images loaded" + listImages.size.toString())
+        Log.d("LoadingImages", "Images loaded" + listImages.size.toString())
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -245,14 +171,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.switch_db -> {
                 showSwitchDialog()
                 return true
             }
             R.id.add_photo -> {
-
-                if(checkedPosition == "default"){
+                if (checkedPosition == "default") {
                     showThatUserCannotAddImage()
                     return true
                 } else {
@@ -268,17 +193,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showThatUserCannotAddImage() {
         val builder = android.app.AlertDialog.Builder(this)
-        builder.setTitle("Change database?")
-                .setMessage("You can't add new augmented image into Default database. Would you like to change active database?")
+        builder.setTitle(R.string.main_activity_add_dialog_title)
+                .setMessage(R.string.main_activity_add_dialog_message)
                 .setCancelable(true)
-                .setPositiveButton("Change") { dialog, id ->
+                .setPositiveButton(R.string.main_activity_add_dialog_positive) { dialog, _ ->
                     showSwitchDialog()
                     dialog.dismiss()
                 }
-                .setNegativeButton("No") { dialog, id ->
+                .setNegativeButton(R.string.main_activity_add_dialog_negative) { dialog, _ ->
                     dialog.cancel()
                 }
         val dialog = builder.create()
@@ -286,75 +210,63 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addNewPhotoToDB() {
-        //arFragment.addNewImage()
-        //showEnterDataDialog()
-
         setupFragment(addImageFragment)
-
-
     }
 
-     fun showImageDescriptionMain(name:String, default: Boolean ){
-        if(default){
+    fun showImageDescriptionMain(name: String, default: Boolean) {
+        if (default) {
 
-            val description = descriptionByName.get(name.substringBeforeLast("."))
-
-            Log.d("pop", description.toString())
-
+            val description = descriptionByName[name.substringBeforeLast(".")]
+            image_desc.bottom_sheet_description.text = description
             image_desc.visibility = View.VISIBLE
 
-            image_desc.bottom_sheet_description.text = description
-
-            var newText = "Information about: <b> $name </b>"
+            val info = getString(R.string.main_activity_information_about)
+            val newText = "$info <b>$name</b>"
             image_desc.bottom_sheet_topic.text = (Html.fromHtml(newText))
         } else {
-            var data = mDatabaseHelper.data
-            var description = "No description"
+            val data = mDatabaseHelper.data
 
+            var description = getString(R.string.main_activity_no_description)
 
-            while(data.moveToNext()) {
-                Log.d("pipka", data.getString(0))
-                if(name == data.getString(0)){
+            while (data.moveToNext()) {
+                if (name == data.getString(0)) {
                     description = data.getString(1)
                     break
                 }
             }
-//        image_description.image_description_text.text = description
-//        image_description.visibility = View.VISIBLE
+
             image_desc.visibility = View.VISIBLE
             image_desc.bottom_sheet_description.text = description
 
-            var newText = "Description for image: <b> $name </b>"
+            val descr = getString(R.string.main_activity_description_for)
+            val newText = "$descr <b>$name</b>"
             image_desc.bottom_sheet_topic.text = (Html.fromHtml(newText))
         }
     }
 
     private fun storeFileInInternalStorage(selectedFile: File, internalStorageFileName: String) {
 
-        Log.d("savein", internalStorageFileName)
-        Log.d("savein", selectedFile.path)
-        val inputStream = FileInputStream(selectedFile) // 1
-        val outputStream = application.openFileOutput(internalStorageFileName, Context.MODE_PRIVATE)  // 2
+        val inputStream = FileInputStream(selectedFile)
+        val outputStream = application.openFileOutput(internalStorageFileName, Context.MODE_PRIVATE)
         val buffer = ByteArray(1024)
-        inputStream.use {  // 3
+        inputStream.use {
             while (true) {
-                val byeCount = it.read(buffer)  // 4
+                val byeCount = it.read(buffer)
                 if (byeCount < 0) break
-                outputStream.write(buffer, 0, byeCount)  // 5
+                outputStream.write(buffer, 0, byeCount)
             }
-            outputStream.close()  // 6
+            outputStream.close()
         }
     }
 
-
-
     private fun showSwitchDialog() {
-        val listItems = arrayOf("Custom", "Default")
+
+        val listItems = arrayOf(getString(R.string.main_activity_dialog_custom), getString(R.string.main_activity_dialog_default))
         val mBuilder = AlertDialog.Builder(this@MainActivity)
-        mBuilder.setTitle("Choose an database")
+        mBuilder.setTitle(getString(R.string.main_activity_dialog_title))
 
         var checkedItem = 1
-        if(checkedPosition == "default"){
+        if (checkedPosition == "default") {
             checkedItem = 1
         } else {
             checkedItem = 0
@@ -362,22 +274,21 @@ class MainActivity : AppCompatActivity() {
 
         mBuilder.setSingleChoiceItems(listItems, checkedItem) { dialogInterface, i ->
 
-            when(i){
+            when (i) {
                 0 -> {
                     writeInPrefs("custom")
-                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, R.string.main_activity_dialog_toast_restart, Toast.LENGTH_LONG).show()
                 }
-                1 ->{
+                1 -> {
                     writeInPrefs("default")
-                    Toast.makeText(this, "Changes will be committed after restart your app", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this,  R.string.main_activity_dialog_toast_restart, Toast.LENGTH_LONG).show()
                 }
             }
 
             dialogInterface.dismiss()
         }
-        // Set the neutral/cancel button click listener
-        mBuilder.setNeutralButton("Cancel") { dialog, _ ->
-            // Do something when click the neutral button
+
+        mBuilder.setNeutralButton(getString(R.string.main_activity_dialog_button_cancel)) { dialog, _ ->
             dialog.cancel()
         }
 
@@ -387,12 +298,12 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun checkPermissions() {
-        if(!hasPermissions(this,android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+        if (!hasPermissions(this, android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
             ActivityCompat.requestPermissions(this,
                     arrayOf(android.Manifest.permission.CAMERA,
                             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                    android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                            android.Manifest.permission.READ_EXTERNAL_STORAGE),
                     321)
 
         }
@@ -403,26 +314,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when(requestCode){
+        when (requestCode) {
             321 -> {
-                permissions.forEachIndexed{ index, i ->
-                    if(grantResults.isNotEmpty() && (grantResults[index] != PackageManager.PERMISSION_GRANTED)) {
-                        if(i == android.Manifest.permission.CAMERA){
-                            Toast.makeText(this,"You can't use app without CAMERA permission", Toast.LENGTH_LONG).show()
+                permissions.forEachIndexed { index, i ->
+                    if (grantResults.isNotEmpty() && (grantResults[index] != PackageManager.PERMISSION_GRANTED)) {
+                        if (i == android.Manifest.permission.CAMERA) {
+                            Toast.makeText(this, R.string.main_activity_no_camera_perm, Toast.LENGTH_LONG).show()
                         } else if (i == android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-                            Toast.makeText(this, "You can't use custom image database without STORAGE permission", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, R.string.main_activity_no_storage_perm, Toast.LENGTH_LONG).show()
                             writeInPrefs("default")
                         }
                     }
                 }
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 
-    private fun writeInPrefs(what: String){
+    private fun writeInPrefs(what: String) {
 
-        Log.d("FIRST_LAUNCH", "Saved" + what)
+        Log.d("FirstLaunch", "Saved" + what)
 
         val editor = pref.edit()
         editor.putString(APP_PREFERENCES_WHAT_DB_USE, what)
@@ -430,7 +342,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var descriptionByName: HashMap<String, String> = HashMap()
-    private fun enterDataToMap(){
+    private fun enterDataToMap() {
         descriptionByName.put("nike", "Web site: https://www.nike.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=IHcWPVbDArU")
 
@@ -518,7 +430,7 @@ class MainActivity : AppCompatActivity() {
         descriptionByName.put("kfc", "Web site: https://www.kfc.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=pWRYvUZhBsA&feature=emb_title")
 
-        descriptionByName.put("lays", "Web site: hßttps://lays.com \n\n " +
+        descriptionByName.put("lays", "Web site: https://lays.com \n\n " +
                 "Video link: https://www.youtube.com/watch?v=lSaZkOX-FWw")
     }
 }

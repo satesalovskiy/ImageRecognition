@@ -53,17 +53,17 @@ class IntroActivity : AppCompatActivity() {
         }
 
         val mList = ArrayList<ScreenItem>()
-        mList.add(ScreenItem(R.string.intro_activity_scan_image.toString(),
-                R.string.intro_activity_scan_image_description.toString(),
+        mList.add(ScreenItem(getString(R.string.intro_activity_scan_image),
+                getString(R.string.intro_activity_scan_image_description),
                 R.drawable.intro_image_1))
-        mList.add(ScreenItem(R.string.intro_activity_video_placing.toString(),
-                R.string.intro_activity_video_placing_description.toString(),
+        mList.add(ScreenItem(getString(R.string.intro_activity_video_placing),
+                getString(R.string.intro_activity_video_placing_description),
                 R.drawable.intro_image_2))
-        mList.add(ScreenItem(R.string.intro_activity_description.toString(),
-                R.string.intro_activity_description_description.toString(),
+        mList.add(ScreenItem(getString(R.string.intro_activity_description),
+                getString(R.string.intro_activity_description_description),
                 R.drawable.intro_image_3))
-        mList.add(ScreenItem(R.string.intro_activity_additional_options.toString(),
-                R.string.intro_activity_additional_options_description.toString(),
+        mList.add(ScreenItem(getString(R.string.intro_activity_additional_options),
+                getString(R.string.intro_activity_additional_options_description),
                 R.drawable.intro_image_4))
 
         screenPager = screen_viewpager
