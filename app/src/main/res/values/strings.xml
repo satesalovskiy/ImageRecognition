@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Logo scan with AR</string>
+    <string name="app_name">Logo AR</string>
 
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
@@ -51,5 +51,8 @@
     <string name="main_activity_no_camera_perm">You can not use app without CAMERA permission</string>
     <string name="main_activity_no_storage_perm">You can not use custom image database without STORAGE permission</string>
     <string name="main_activity_layout_no_description">No description</string>
+
+    <string name="bottom_sheet_peek">Bottom_sheet_peek</string>
+    <string name="bottom_sheet_content">Bottom_sheet_content</string>
 
 </resources>

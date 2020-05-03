@@ -3,9 +3,9 @@
     android:opacity="opaque">
 
     <item
-        android:drawable="@color/colorGrey"/>
+        android:drawable="@color/colorNewBlackLaunch"/>
 
-    <item android:drawable="@drawable/ic_logo"
+    <item android:drawable="@drawable/ic_logo_new"
         android:gravity="center"
         android:height="130dp"
         android:width="130dp"
