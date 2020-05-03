@@ -29,7 +29,7 @@
     <string name="intro_activity_video_placing_description">Дождитесь появления видео поверх картинки</string>
     <string name="intro_activity_description">Описание</string>
     <string name="intro_activity_description_description">Вы можете найти дополнительную информацию о видео в нижней части экрана</string>
-    <string name="intro_activity_additional_options">Дополнительные возможности</string>
+    <string name="intro_activity_additional_options">Дополнительные \n возможности</string>
     <string name="intro_activity_additional_options_description">Вы можете получить доступ к нескольким интересным возможностям, нажав на иконку меню в правом верхнем углу</string>
     <string name="intro_activity_btn_next">Далее</string>
     <string name="intro_activity_btn_skip">Пропустить</string>
