@@ -33,7 +33,7 @@ class ARFragment : ArFragment() {
     private val APP_PREFERENCES_FIRST_LAUNCH = "first_launch"
     private val APP_PREFERENCES_WHAT_DB_USE = "what_db_use"
     private val APP_PREFERENCES_CUSTOM_FIRST_TIME = "custom_first_time"
-    private val DEFAULT_IMAGE_DATABASE = "newdefault.imgdb"
+    private val DEFAULT_IMAGE_DATABASE = "newdefault2.imgdb"
     private val CUSTOM_IMAGE_DATABASE = "custom.imgdb"
     private val CHROMA_KEY_COLOR = Color(0.1843f, 1.0f, 0.098f)
     private val MIN_OPENGL_VERSION = 3.0

@@ -3,6 +3,7 @@
 
     <string name="switch_db">Switch database</string>
     <string name="add_photo">Add new photo</string>
+    <string name="list_images">Images</string>
 
     <string name="add_new_image_fragment_forgot_initialize">You forgot to initialize something!</string>
     <string name="add_new_image_fragment_image_picked">Image picked</string>

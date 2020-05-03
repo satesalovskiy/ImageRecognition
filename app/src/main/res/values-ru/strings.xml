@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">Logo AR</string>
 
-    <string name="switch_db">Switch database</string>
-    <string name="add_photo">Add new photo</string>
+    <string name="switch_db">Сменить базу</string>
+    <string name="add_photo">Добавить фото</string>
+    <string name="list_images">Картинки</string>
 
 
     <string name="add_new_image_fragment_forgot_initialize">Вы забыли указать один из параметров!</string>
