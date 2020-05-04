@@ -11,7 +11,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Html
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -79,9 +78,6 @@ class MainActivity : AppCompatActivity() {
             checkedPosition = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
         }
         if (isFirstLaunch) {
-
-            Log.d("FirstLaunch", "Real first launch")
-
             val editor = pref.edit()
             editor.putBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
             editor.putString(APP_PREFERENCES_WHAT_DB_USE, "default")
@@ -160,8 +156,6 @@ class MainActivity : AppCompatActivity() {
             val bitmap = BitmapFactory.decodeStream(`is`)
             listImages.add(i, bitmap)
         }
-
-        Log.d("LoadingImages", "Images loaded" + listImages.size.toString())
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -332,9 +326,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun writeInPrefs(what: String) {
-
-        Log.d("FirstLaunch", "Saved" + what)
-
         val editor = pref.edit()
         editor.putString(APP_PREFERENCES_WHAT_DB_USE, what)
         editor.apply()

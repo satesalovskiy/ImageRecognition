@@ -1,7 +1,6 @@
 package com.tsa.imagerecognition
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -25,12 +24,8 @@ class ListOfDefaultImagesFragment : Fragment() {
 
         val act = activity as MainActivity
 
-        Log.d("ListDef", act.listImages.size.toString())
-
         val adapter = MyDefaultAdapter(act.listImages, act)
         listOfImages.adapter = adapter
-
-        Log.d("ListDef", "Adapter setup")
 
         return viewImages
     }

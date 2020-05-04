@@ -10,7 +10,6 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +23,6 @@ import com.google.ar.sceneform.rendering.Color
 import com.google.ar.sceneform.rendering.ExternalTexture
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import common.helpers.DatabaseHelper
 import java.io.*
 
 class ARFragment : ArFragment() {
@@ -57,7 +55,6 @@ class ARFragment : ArFragment() {
         val pref: SharedPreferences? = activity?.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
         if (pref!!.contains(APP_PREFERENCES_WHAT_DB_USE)) {
             WHAT_DB_USE = pref.getString(APP_PREFERENCES_WHAT_DB_USE, "")
-            Log.d("FirstLaunch", "We will use $WHAT_DB_USE")
         }
         if (pref.contains(APP_PREFERENCES_FIRST_LAUNCH)) {
             isFirstLaunch = pref.getBoolean(APP_PREFERENCES_FIRST_LAUNCH, false)
@@ -137,15 +134,12 @@ class ARFragment : ArFragment() {
                 editor.putBoolean(APP_PREFERENCES_CUSTOM_FIRST_TIME, false)
                 editor.apply()
 
-                Log.d("FirstLaunch", "in first")
             } else {
                 if (file.exists()) {
                     inputStr = FileInputStream(file)
-                    Log.d("FirstLaunch", "in second 1")
                 } else {
                     file.mkdirs()
                     inputStr = FileInputStream(file)
-                    Log.d("FirstLaunch", "in second 2")
                 }
             }
 
@@ -153,8 +147,6 @@ class ARFragment : ArFragment() {
 
             if (isCustomFirstTime)
                 serialazeDB()
-
-            Log.d("FirstLaunch", augmentedImageDB.numImages.toString())
 
             config.augmentedImageDatabase = augmentedImageDB
             return true
@@ -185,7 +177,6 @@ class ARFragment : ArFragment() {
                     renderable.material.setFloat4("keyColor", CHROMA_KEY_COLOR)
                 }
                 .exceptionally {
-                    Log.e(TAG, "Could not create ModelRenderable")
                     return@exceptionally null
                 }
 
@@ -234,7 +225,6 @@ class ARFragment : ArFragment() {
                 showImageDescription(augmentedImage)
                 playbackArVideo(augmentedImage)
             } catch (e: Exception) {
-                Log.e(TAG, "Could not play video [${augmentedImage.name}]")
             }
         }
     }
@@ -292,7 +282,6 @@ class ARFragment : ArFragment() {
             if (!file.exists()) {
                 Toast.makeText(activity, R.string.ar_fragment_error_find_video, Toast.LENGTH_LONG).show()
             } else {
-                Log.d("MoviesPath", "" + context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
                 mediaPlayer.setDataSource(context?.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath + File.separator + videoName)
                 mediaPlayer.isLooping = true
                 mediaPlayer.prepare()
@@ -330,7 +319,6 @@ class ARFragment : ArFragment() {
         super.onAttach(context)
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Log.e(TAG, "Sceneform requires Android N or later")
             Toast.makeText(activity, R.string.ar_fragment_sceneform_requires_android, Toast.LENGTH_LONG).show()
         }
 
@@ -338,7 +326,6 @@ class ARFragment : ArFragment() {
                 .deviceConfigurationInfo
                 .glEsVersion
         if (java.lang.Double.parseDouble(openGlVersionString) < MIN_OPENGL_VERSION) {
-            Log.e(TAG, "Sceneform requires OpenGL ES 3.0 or later")
             Toast.makeText(activity, R.string.ar_fragment_sceneform_requires_opengl, Toast.LENGTH_LONG).show()
         }
     }
