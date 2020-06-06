@@ -18,6 +18,6 @@
         android:id="@+id/setup_fragment"
         android:icon="@drawable/baseline_add_photo_alternate_black_36dp"
         android:orderInCategory="3"
-        android:title="Images"
+        android:title="@string/list_images"
         app:showAsAction="never" />
 </menu>
